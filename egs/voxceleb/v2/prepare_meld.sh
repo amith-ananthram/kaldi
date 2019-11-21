@@ -30,7 +30,9 @@ NUM_INPUT_DIMENSIONS=30
 # we're mapping to in MELD (for our updated output layer)
 NUM_TARGET_DIMENSIONS=7
 
-stage=2
+stage=0
+
+. ./utils/parse_options.sh
 
 # make expected directory structure (if it doesn't already exist)
 if [ $stage -eq 0 ]; then
@@ -137,14 +139,17 @@ if [ $stage -eq 2 ]; then
 		"$DATA_INPUT_DIR/train_sent_emo.csv" \
 		"$DATA_INPUT_DIR/train_splits/" \
 		"$DATA_OUTPUT_TRAIN_DIR"
+	utils/utt2spk_to_spk2utt.pl "$DATA_OUTPUT_TRAIN_DIR/utt2spk" > "$DATA_OUTPUT_TRAIN_DIR/spk2utt"
 	# make the inputs for the dev data
 	generate_meld_inputs.py \
 		"$DATA_INPUT_DIR/dev_sent_emo.csv" \
 		"$DATA_INPUT_DIR/dev_splits_complete/" \
 		"$DATA_OUTPUT_DEV_DIR"
+	utils/utt2spk_to_spk2utt.pl "$DATA_OUTPUT_DEV_DIR/utt2spk" > "$DATA_OUTPUT_DEV_DIR/spk2utt"
 	# make the inputs for the test data
 	generate_meld_inputs.py \
 		"$DATA_INPUT_DIR/test_sent_emo.csv" \
 		"$DATA_INPUT_DIR/output_repeated_splits_test/" \
 		"$DATA_OUTPUT_TEST_DIR"
+	utils/utt2spk_to_spk2utt.pl "$DATA_OUTPUT_TEST_DIR/utt2spk" > "$DATA_OUTPUT_TEST_DIR/spk2utt"
 fi

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import re
 import csv
 import sys
 import os.path
@@ -22,7 +23,7 @@ class UtteranceDetails:
 		return "%s: %s" % (self.get_id(), self.emotion)
 
 	def get_id(self):
-		return "%s-%s" % (self.dialogue_id, self.utterance_id)
+		return "%s-%s-%s" % (self.emotion, self.dialogue_id, self.utterance_id)
 
 	def get_filename(self):
 		return "dia%s_utt%s.mp4" % (self.dialogue_id, self.utterance_id)
@@ -37,7 +38,7 @@ def get_utterances(input_csv):
 				line_count += 1
 				continue
 			else:
-				utterances.append(UtteranceDetails(row[5], row[6], EMOTION_TO_ID[row[3]]))
+				utterances.append(UtteranceDetails(row[5], row[6], row[3]))
 				line_count += 1
 	return utterances
 
@@ -47,14 +48,14 @@ def get_utterances(input_csv):
 # the existing vox2/run.sh with minimal modification)
 def generate_utt2spk(utterances, output_data_dir):
 	with open(os.path.join(output_data_dir, UTT2SPK_FILE), 'w') as f:
-		for utterance in utterances:
-			f.write("%s %s\n" % (utterance.get_id(), utterance.emotion))
+		for utterance in sorted(utterances, key=lambda utterance: utterance.get_id()):
+			f.write("%s %s\n" % (utterance.get_id(), EMOTION_TO_ID[utterance.emotion]))
 
 def generate_wavscp(utterances, input_data_dir, output_data_dir):
 	with open(os.path.join(output_data_dir, WAV_FILE), 'w') as f:
-		for utterance in utterances:
+		for utterance in sorted(utterances, key=lambda utterance: utterance.get_id()):
 			mp4_file_path = os.path.join(input_data_dir, utterance.get_filename())
-			wav_creation_cmd = "ffmpeg -v 8 -i %s -f wav -acodec pcm_s16le -|" % (mp4_file_path)
+			wav_creation_cmd = "ffmpeg -v 8 -i %s -f wav -ar 16000 -acodec pcm_s16le -|" % (mp4_file_path)
 			f.write("%s %s\n" % (utterance.get_id(), wav_creation_cmd))
 
 def main():
