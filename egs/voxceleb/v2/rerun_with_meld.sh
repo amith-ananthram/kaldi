@@ -10,17 +10,19 @@
 
 . ./cmd.sh
 . ./path.sh
+. ./meld_settings.sh
+
 set -e
 
 stage=0
 
 . ./utils/parse_options.sh
 
-root=meld
+root="${BASE_DIR}"
 mfccdir="$root/mfcc"
 vaddir="$root/mfcc"
 nnet_dir="$root/exp/xvector_nnet_1a"
-data_dir="$root/outputs/data"
+data_dir="${DATA_OUTPUT_DIR}"
 
 musan_root=corpora/JHU/musan
 
@@ -160,6 +162,6 @@ if [ $stage -ge 8 ]; then
   if [ $stage -le 9 ]; then
     local/nnet3/xvector/run_meld_xvector.sh --stage $stage --train-stage -1 \
       --data ${data_dir}/train_combined_no_sil --nnet-dir $nnet_dir \
-      --egs-dir $nnet_dir/egs --input-model "$root/inputs/reference/vox2_base.raw"
+      --egs-dir $nnet_dir/egs --input-model "${MODEL_OUTPUT_DIR}/${MODIFIED_REFERENCE_MODEL}"
   fi
 fi
