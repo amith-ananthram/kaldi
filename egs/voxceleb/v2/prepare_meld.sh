@@ -13,7 +13,7 @@ set -e
 NUM_INPUT_DIMENSIONS=30
 # this should be the number of target emotions
 # we're mapping to in MELD (for our updated output layer)
-NUM_TARGET_DIMENSIONS=7
+NUM_TARGET_DIMENSIONS=5
 
 stage=0
 
@@ -137,4 +137,6 @@ if [ $stage -eq 2 ]; then
 		"$DATA_INPUT_DIR/output_repeated_splits_test/" \
 		"$DATA_OUTPUT_TEST_DIR"
 	utils/utt2spk_to_spk2utt.pl "$DATA_OUTPUT_TEST_DIR/utt2spk" > "$DATA_OUTPUT_TEST_DIR/spk2utt"
+
+	utils/combine_data.sh "$DATA_OUTPUT_COMBINED_DIR" "$DATA_OUTPUT_TRAIN_DIR" "$DATA_OUTPUT_DEV_DIR" "$DATA_OUTPUT_TEST_DIR"
 fi

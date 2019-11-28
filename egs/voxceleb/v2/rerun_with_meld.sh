@@ -48,21 +48,19 @@ fi
 
 if [ $stage -eq 3 ]; then
   # Make MFCCs and compute the energy-based VAD for each dataset
-  for name in train test; do
-    steps/make_mfcc.sh --write-utt2num-frames true --mfcc-config conf/mfcc.conf --nj 40 --cmd "$train_cmd" \
-      ${data_dir}/${name} ${root}/exp/make_mfcc $mfccdir
-    utils/fix_data_dir.sh ${data_dir}/${name}
-    sid/compute_vad_decision.sh --nj 40 --cmd "$train_cmd" \
-      ${data_dir}/${name} ${root}/exp/make_vad $vaddir
-    utils/fix_data_dir.sh ${data_dir}/${name}
-  done
+  steps/make_mfcc.sh --write-utt2num-frames true --mfcc-config conf/mfcc.conf --nj 40 --cmd "$train_cmd" \
+      ${DATA_OUTPUT_COMBINED_DIR} ${root}/exp/make_mfcc $mfccdir
+  utils/fix_data_dir.sh ${DATA_OUTPUT_COMBINED_DIR}
+  sid/compute_vad_decision.sh --nj 40 --cmd "$train_cmd" \
+    ${DATA_OUTPUT_COMBINED_DIR} ${root}/exp/make_vad $vaddir
+  utils/fix_data_dir.sh ${DATA_OUTPUT_COMBINED_DIR}
 fi
 
 # In this section, we augment the MELD data with reverberation,
 # noise, music, and babble, and combine it with the clean data.
 if [ $stage -eq 4 ]; then
   frame_shift=0.01
-  awk -v frame_shift=$frame_shift '{print $1, $2*frame_shift;}' ${data_dir}/train/utt2num_frames > ${data_dir}/train/reco2dur
+  awk -v frame_shift=$frame_shift '{print $1, $2*frame_shift;}' ${DATA_OUTPUT_COMBINED_DIR}/utt2num_frames > ${DATA_OUTPUT_COMBINED_DIR}/reco2dur
 
   if [ ! -d "RIRS_NOISES" ]; then
     # Download the package that includes the real RIRs, simulated RIRs, isotropic noises and point-source noises
@@ -84,8 +82,8 @@ if [ $stage -eq 4 ]; then
     --isotropic-noise-addition-probability 0 \
     --num-replications 1 \
     --source-sampling-rate 16000 \
-    ${data_dir}/train ${data_dir}/train_reverb
-  cp ${data_dir}/train/vad.scp ${data_dir}/train_reverb/
+    ${DATA_OUTPUT_COMBINED_DIR} ${data_dir}/train_reverb
+  cp ${DATA_OUTPUT_COMBINED_DIR}/vad.scp ${data_dir}/train_reverb/
   utils/copy_data_dir.sh --utt-suffix "-reverb" ${data_dir}/train_reverb ${data_dir}/train_reverb.new
   rm -rf ${data_dir}/train_reverb
   mv ${data_dir}/train_reverb.new ${data_dir}/train_reverb
@@ -102,11 +100,11 @@ if [ $stage -eq 4 ]; then
   done
 
   # Augment with musan_noise
-  steps/data/augment_data_dir.py --utt-suffix "noise" --fg-interval 1 --fg-snrs "15:10:5:0" --fg-noise-dir "data/musan_noise" ${data_dir}/train ${data_dir}/train_noise
+  steps/data/augment_data_dir.py --utt-suffix "noise" --fg-interval 1 --fg-snrs "15:10:5:0" --fg-noise-dir "data/musan_noise" ${DATA_OUTPUT_COMBINED_DIR} ${data_dir}/train_noise
   # Augment with musan_music
-  steps/data/augment_data_dir.py --utt-suffix "music" --bg-snrs "15:10:8:5" --num-bg-noises "1" --bg-noise-dir "data/musan_music" ${data_dir}/train ${data_dir}/train_music
+  steps/data/augment_data_dir.py --utt-suffix "music" --bg-snrs "15:10:8:5" --num-bg-noises "1" --bg-noise-dir "data/musan_music" ${DATA_OUTPUT_COMBINED_DIR} ${data_dir}/train_music
   # Augment with musan_speech
-  steps/data/augment_data_dir.py --utt-suffix "babble" --bg-snrs "20:17:15:13" --num-bg-noises "3:4:5:6:7" --bg-noise-dir "data/musan_speech" ${data_dir}/train ${data_dir}/train_babble
+  steps/data/augment_data_dir.py --utt-suffix "babble" --bg-snrs "20:17:15:13" --num-bg-noises "3:4:5:6:7" --bg-noise-dir "data/musan_speech" ${DATA_OUTPUT_COMBINED_DIR} ${data_dir}/train_babble
 
   # Combine reverb, noise, music, and babble into one directory.
   utils/combine_data.sh ${data_dir}/train_aug ${data_dir}/train_reverb ${data_dir}/train_noise ${data_dir}/train_music ${data_dir}/train_babble
@@ -125,7 +123,7 @@ if [ $stage -eq 5 ]; then
 
   # Combine the clean and augmented MELD list.  This is now roughly
   # double the size of the original clean list.
-  utils/combine_data.sh ${data_dir}/train_combined ${data_dir}/train_aug_1m ${data_dir}/train
+  utils/combine_data.sh ${data_dir}/train_combined ${data_dir}/train_aug_1m ${DATA_OUTPUT_COMBINED_DIR}
 fi
 
 # Now we prepare the features to generate examples for xvector training.
@@ -133,7 +131,7 @@ if [ $stage -eq 6 ]; then
   # This script applies CMVN and removes nonspeech frames.  Note that this is somewhat
   # wasteful, as it roughly doubles the amount of training data on disk.  After
   # creating training examples, this can be removed.
-  local/nnet3/xvector/prepare_feats_for_egs.sh --nj 2 --cmd "$train_cmd" \
+  local/nnet3/xvector/prepare_feats_for_egs.sh --nj 40 --cmd "$train_cmd" \
     ${data_dir}/train_combined ${data_dir}/train_combined_no_sil ${root}/exp/train_combined_no_sil
   utils/fix_data_dir.sh ${data_dir}/train_combined_no_sil
 fi
