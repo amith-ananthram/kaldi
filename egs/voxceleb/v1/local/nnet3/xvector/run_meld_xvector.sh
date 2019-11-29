@@ -95,7 +95,7 @@ if [ $stage -eq 9 ]; then
     --egs.dir="$egs_dir" \
     --cleanup.remove-egs $remove_egs \
     --cleanup.preserve-model-interval=10 \
-    --use-gpu=true \
+    --use-gpu=wait \
     --dir=$nnet_dir  || exit 1;
 fi
 
