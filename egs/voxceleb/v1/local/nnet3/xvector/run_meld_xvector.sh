@@ -52,7 +52,8 @@ input_model=placeholder
 # the number of archives and increases the number of examples per archive.
 # Decreasing this value increases the number of archives, while decreasing the
 # number of examples per archive.
-if [ $stage -eq 8 ]; then
+if [ $stage -le 8 ]; then
+  echo "stage 8: start"
   echo "$0: Getting neural network training egs";
   # dump egs.
   if [[ $(hostname -f) == *.clsp.jhu.edu ]] && [ ! -d $egs_dir/storage ]; then
@@ -62,13 +63,14 @@ if [ $stage -eq 8 ]; then
   sid/nnet3/xvector/get_egs.sh --cmd "$train_cmd" \
     --nj 8 \
     --stage 0 \
-    --frames-per-iter 1000000000 \
+    --frames-per-iter 25000000 \
     --frames-per-iter-diagnostic 100000 \
     --min-frames-per-chunk 50 \
     --max-frames-per-chunk 100 \
     --num-diagnostic-archives 3 \
-    --num-repeats 50 \
+    --num-repeats 500 \
     "$data" $egs_dir
+  echo "stage 8: end"
 fi
 
 dropout_schedule='0,0@0.20,0.1@0.50,0'
