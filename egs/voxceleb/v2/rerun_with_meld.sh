@@ -24,41 +24,50 @@ vaddir="$root/mfcc"
 nnet_dir="$root/exp/xvector_nnet_1a"
 data_dir="${DATA_OUTPUT_DIR}"
 
-musan_root=corpora/JHU/musan
+musan_root=corpora/musan
 
 # make expected directory structure (if it doesn't already exist)
-if [ $stage -eq 0 ]; then
+if [ $stage -le 0 ]; then
+  echo "stage 0: start"
   prepare_meld.sh --stage 0
+  echo "stage 0: end"
 fi
 
 # prepare reference model (safe to rerun; it will
 # just over-write any modified reference model)
-if [ $stage -eq 1 ]; then
+if [ $stage -le 1 ]; then
+  echo "stage 1: start"
   prepare_meld.sh --stage 1
+  echo "stage 1: end"
 fi
 
 # prepare input data: utt2spk, wav.scp (safe to rerun; it will
 # just over-write any existing generated input files)
-if [ $stage -eq 2 ]; then
+if [ $stage -le 2 ]; then
+  echo "stage 2: start"
   prepare_meld.sh --stage 2
+  echo "stage 2: end"
 fi
 
 # if we end up training off the combination of MELD + EmoVoxCeleb,
 # we need to combine the corpora here using utils/combine_data.sh
 
-if [ $stage -eq 3 ]; then
+if [ $stage -le 3 ]; then
+  echo "stage 3: start"
   # Make MFCCs and compute the energy-based VAD for each dataset
-  steps/make_mfcc.sh --write-utt2num-frames true --mfcc-config conf/mfcc.conf --nj 40 --cmd "$train_cmd" \
+  steps/make_mfcc_pitch.sh --write-utt2num-frames true --mfcc-config conf/mfcc.conf --pitch-config conf/pitch.conf --nj 40 --cmd "$train_cmd" \
       ${DATA_OUTPUT_COMBINED_DIR} ${root}/exp/make_mfcc $mfccdir
   utils/fix_data_dir.sh ${DATA_OUTPUT_COMBINED_DIR}
   sid/compute_vad_decision.sh --nj 40 --cmd "$train_cmd" \
     ${DATA_OUTPUT_COMBINED_DIR} ${root}/exp/make_vad $vaddir
   utils/fix_data_dir.sh ${DATA_OUTPUT_COMBINED_DIR}
+  echo "stage 3: end"
 fi
 
 # In this section, we augment the MELD data with reverberation,
 # noise, music, and babble, and combine it with the clean data.
-if [ $stage -eq 4 ]; then
+if [ $stage -le 4 ]; then
+  echo "stage 4: start"
   frame_shift=0.01
   awk -v frame_shift=$frame_shift '{print $1, $2*frame_shift;}' ${DATA_OUTPUT_COMBINED_DIR}/utt2num_frames > ${DATA_OUTPUT_COMBINED_DIR}/reco2dur
 
@@ -100,17 +109,19 @@ if [ $stage -eq 4 ]; then
   done
 
   # Augment with musan_noise
-  steps/data/augment_data_dir.py --utt-suffix "noise" --fg-interval 1 --fg-snrs "15:10:5:0" --fg-noise-dir "data/musan_noise" ${DATA_OUTPUT_COMBINED_DIR} ${data_dir}/train_noise
+  steps/data/augment_data_dir.py --utt-suffix "noise" --fg-interval 1 --fg-snrs "15:10:5:0" --fg-noise-dir ${data_dir}/musan_noise ${DATA_OUTPUT_COMBINED_DIR} ${data_dir}/train_noise
   # Augment with musan_music
-  steps/data/augment_data_dir.py --utt-suffix "music" --bg-snrs "15:10:8:5" --num-bg-noises "1" --bg-noise-dir "data/musan_music" ${DATA_OUTPUT_COMBINED_DIR} ${data_dir}/train_music
+  steps/data/augment_data_dir.py --utt-suffix "music" --bg-snrs "15:10:8:5" --num-bg-noises "1" --bg-noise-dir ${data_dir}/musan_music ${DATA_OUTPUT_COMBINED_DIR} ${data_dir}/train_music
   # Augment with musan_speech
-  steps/data/augment_data_dir.py --utt-suffix "babble" --bg-snrs "20:17:15:13" --num-bg-noises "3:4:5:6:7" --bg-noise-dir "data/musan_speech" ${DATA_OUTPUT_COMBINED_DIR} ${data_dir}/train_babble
+  steps/data/augment_data_dir.py --utt-suffix "babble" --bg-snrs "20:17:15:13" --num-bg-noises "3:4:5:6:7" --bg-noise-dir ${data_dir}/musan_speech ${DATA_OUTPUT_COMBINED_DIR} ${data_dir}/train_babble
 
   # Combine reverb, noise, music, and babble into one directory.
   utils/combine_data.sh ${data_dir}/train_aug ${data_dir}/train_reverb ${data_dir}/train_noise ${data_dir}/train_music ${data_dir}/train_babble
+  echo "stage 4: end"
 fi
 
-if [ $stage -eq 5 ]; then
+if [ $stage -le 5 ]; then
+  echo "stage 5: start"
   # Take a random subset of the augmentations
   utils/subset_data_dir.sh ${data_dir}/train_aug 10000 ${data_dir}/train_aug_1m
   utils/fix_data_dir.sh ${data_dir}/train_aug_1m
@@ -118,27 +129,31 @@ if [ $stage -eq 5 ]; then
   # Make MFCCs for the augmented data.  Note that we do not compute a new
   # vad.scp file here.  Instead, we use the vad.scp from the clean version of
   # the list.
-  steps/make_mfcc.sh --mfcc-config conf/mfcc.conf --nj 40 --cmd "$train_cmd" \
+  steps/make_mfcc_pitch.sh --mfcc-config conf/mfcc.conf --pitch-config conf/pitch.conf --nj 40 --cmd "$train_cmd" \
     ${data_dir}/train_aug_1m ${root}/exp/make_mfcc $mfccdir
 
   # Combine the clean and augmented MELD list.  This is now roughly
   # double the size of the original clean list.
   utils/combine_data.sh ${data_dir}/train_combined ${data_dir}/train_aug_1m ${DATA_OUTPUT_COMBINED_DIR}
+  echo "stage 5: end"
 fi
 
 # Now we prepare the features to generate examples for xvector training.
-if [ $stage -eq 6 ]; then
+if [ $stage -le 6 ]; then
+  echo "stage 6: start"
   # This script applies CMVN and removes nonspeech frames.  Note that this is somewhat
   # wasteful, as it roughly doubles the amount of training data on disk.  After
   # creating training examples, this can be removed.
   local/nnet3/xvector/prepare_feats_for_egs.sh --nj 40 --cmd "$train_cmd" \
     ${data_dir}/train_combined ${data_dir}/train_combined_no_sil ${root}/exp/train_combined_no_sil
   utils/fix_data_dir.sh ${data_dir}/train_combined_no_sil
+  echo "stage 6: end"
 fi
 
 # ./run.sh does a bunch of filtering of utterances by speakers
 # that are too infrequent -- we skip that here speaker=emotion label 
-if [ $stage -eq 7 ]; then
+if [ $stage -le 7 ]; then
+  echo "stage 7: start"
   # Now, we need to remove features that are too short after removing silence
   # frames.  We want atleast ~1s (100 frames) per utterance. (note this is smaller than in v2/run.sh)
   min_len=100
@@ -153,6 +168,7 @@ if [ $stage -eq 7 ]; then
 
   # Now we're ready to create training examples.
   utils/fix_data_dir.sh ${data_dir}/train_combined_no_sil
+  echo "stage 7: end"
 fi
 
 # Stages 8 and 9 (generating egs and training the nnet) are handled in run_meld_xvector.sh

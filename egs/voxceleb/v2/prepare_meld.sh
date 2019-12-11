@@ -10,7 +10,7 @@ set -e
 # this should be set to our input dimensionality
 # (ie # of MFCC + pitch features); it's 30 in the
 # default vox2/run.sh training protocol
-NUM_INPUT_DIMENSIONS=30
+NUM_INPUT_DIMENSIONS=33
 # this should be the number of target emotions
 # we're mapping to in MELD (for our updated output layer)
 NUM_TARGET_DIMENSIONS=5

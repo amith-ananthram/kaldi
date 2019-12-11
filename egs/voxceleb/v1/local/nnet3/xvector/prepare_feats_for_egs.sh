@@ -62,8 +62,8 @@ cp $data_in/wav.scp $data_out/wav.scp
 
 write_num_frames_opt="--write-num-frames=ark,t:$featdir/log/utt2num_frames.JOB"
 
-sdata_in=$data_in/split$nj;
-utils/split_data.sh $data_in $nj || exit 1;
+sdata_in=$data_in/split${nj}utt;
+utils/split_data.sh --per-utt $data_in $nj || exit 1;
 
 $cmd JOB=1:$nj $dir/log/create_xvector_feats_${name}.JOB.log \
   apply-cmvn-sliding --norm-vars=false --center=true --cmn-window=$cmn_window \
