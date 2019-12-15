@@ -11,9 +11,9 @@ experiment_name=placeholder
 
 . ./utils/parse_options.sh
 
-BASE_DIR="${iemocap_path}"
+BASE_DIR="${iemocap_path}/IEMOCAP_full_release"
 CSVS_DIR="${BASE_DIR}/csvs"
-DATA_DIR="${BASE_DIR}/data"
+DATA_DIR="${BASE_DIR}"
 
 MFCC_DIR="${output_path}/mfcc"
 
@@ -21,8 +21,9 @@ MFCC_DIR="${output_path}/mfcc"
 if [ $stage -eq 0 ]; then
 	for session in 1 2 3 4 5; do
 		generate_iemocap_inputs.py \
+			"session${session}" \
 			"${CSVS_DIR}/Session${session}.csv" \
-			"${DATA_DIR}/Session${session}/sentences/ForcedAlignment" \
+			"${DATA_DIR}/Session${session}/sentences/wav" \
 			"${output_path}/session${session}"
 		utils/utt2spk_to_spk2utt.pl "${output_path}/session${session}/utt2spk" > "${output_path}/session${session}/spk2utt"
 	done
