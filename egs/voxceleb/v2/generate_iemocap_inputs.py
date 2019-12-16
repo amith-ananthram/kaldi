@@ -9,26 +9,47 @@ UTT2SPK_FILE = 'utt2spk'
 WAV_FILE = 'wav.scp'
 
 class UtteranceDetails:
-	def __init__(self, session, dialogue_id, utterance_id, emotion):
+	def __init__(self, session, mocap_source, dialogue_type, 
+		dialogue_number, utterance_number, utterance, speaker, emotion_label):
 		self.session = session
-		self.
-		self.src_file = src_file
-		self.dialogue_id = dialogue_id
-		self.utterance_id = utterance_id
-		self.emotion = emotion
+		self.mocap_source = mocap_source
+		self.dialogue_type = dialogue_type
+		self.dialogue_number = dialogue_number
+		self.utterance_number = utterance_number
+		self.utterance = utterance
+		self.speaker = speaker
+		self.emotion_label = emotion_label
 
 	def __repr__(self):
-		return "%s: %s" % (self.get_id(), self.emotion)
+		return "%s: %s" % (self.get_filename(), self.utterance)
 
 	def get_id(self):
-		return "%s-%s-%s-%s" % (
-			self.emotion, self.src_file, self.dialogue_id, self.utterance_id)
+		return "Ses%s%s_%s%s_%s%s" % (
+			self.session,
+			self.mocap_source,
+			self.get_dialogue_type_shortname(),
+			self.dialogue_number,
+			self.speaker,
+			self.utterance_number
+		)
 
-	# Ses01F_impro01/Ses01F_impro01_F000.wav
-	# Sr.No,Utterance,Speaker,Emotion,Session_Number,Mocap_Source,Dialogue_Type,Dialogue_Number,Speaker,Utterance_Number,StartTime,EndTime,Emotion_Label
-	# 1303,Excuse me.,F,neu,01,_,improvisation,01,F,000,6.2901,8.2357,3
+	def get_dialogue_type_shortname(self):
+		if self.dialogue_type == "improvisation":
+			return "impro"
+		elif self.dialogue_type == "script":
+			return "script"
+		else:
+			raise Exception("Unsupported dialogue type: %s" % (self.dialogue_type))
+
+	# example filename: Ses01F_impro01/Ses01F_impro01_F000.wav
 	def get_filename(self):
-		return "dia%s_utt%s.mp4" % (self.dialogue_id, self.utterance_id)
+		return "Ses%s%s_%s%s/%s.wav" % (
+			self.session,
+			self.mocap_source,
+			self.get_dialogue_type_shortname(),
+			self.dialogue_number,
+			self.get_id()
+		)
 
 def get_utterances(input_csv):
 	utterances = []
@@ -40,48 +61,62 @@ def get_utterances(input_csv):
 				line_count += 1
 				continue
 			else:
-				speaker = row[2]
-				session_number = row[4]
-				dialogue_type = row[6]
-				dialogue_number = row[7]
-				addressee = row[8]
-				utterance_number = row[9]
-				emotion_label = row[12]
+				# example CSV row
+				# 0 Sr.No: 1303
+				# 1 Session_Number: 01
+				# 2 Mocap_Source: F
+				# 3 Dialogue_Type: improvisation
+				# 4 Dialogue_Number: 01
+				# 5 Utterance_Number: 000
+				# 6 StartTime: 6.2901
+				# 7 EndTime: 8.2357
+				# 8 Utterance: Excuse me.
+				# 9 Speaker: F
+				# 10 Emotion: neu
+				# 11 Emotion_Label: 3
+				session = row[1]
+				mocap_source = row[2]
+				dialogue_type = row[3]
+				dialogue_number = row[4]
+				utterance_number = row[5]
+				utterance = row[8]
+				speaker = row[9]
+				emotion_label = row[11]
 				utterances.append(
 					UtteranceDetails(
-						speaker, 
-						session_number, 
-						dialogue_type, 
+						session,
+						mocap_source,
+						dialogue_type,
 						dialogue_number,
-						addressee,
 						utterance_number,
-						emotion_label
+						utterance,
+						speaker,
+						emotion_label,
 					)
 				)
 				line_count += 1
 	return utterances
 
-# note that the utt2spk file we generate actually each 
+# note that in the utt2spk file we generate we map each 
 # utterance to a numerical encoding of the utterance's 
 # emotion label according to MELD (so that we can lever 
 # the existing vox2/run.sh with minimal modification)
 def generate_utt2spk(utterances, output_data_dir):
 	with open(os.path.join(output_data_dir, UTT2SPK_FILE), 'w') as f:
 		for utterance in sorted(utterances, key=lambda utterance: utterance.get_id()):
-			f.write("%s %s\n" % (utterance.get_id(), EMOTION_TO_ID[utterance.emotion]))
+			f.write("%s %s\n" % (utterance.get_id(), utterance.emotion_label))
 
 def generate_wavscp(utterances, input_data_dir, output_data_dir):
 	with open(os.path.join(output_data_dir, WAV_FILE), 'w') as f:
 		for utterance in sorted(utterances, key=lambda utterance: utterance.get_id()):
-			mp4_file_path = os.path.join(input_data_dir, utterance.get_filename())
-			wav_creation_cmd = "ffmpeg -v 8 -i %s -f wav -ar 16000 -acodec pcm_s16le -|" % (mp4_file_path)
+			wav_file_path = os.path.join(input_data_dir, utterance.get_filename())
+			wav_creation_cmd = "ffmpeg -v 8 -i %s -f wav -ar 16000 -acodec pcm_s16le -|" % (wav_file_path)
 			f.write("%s %s\n" % (utterance.get_id(), wav_creation_cmd))
 
 def main():
-	session = sys.argv[1]
-	input_csv = sys.argv[2]
-	input_data_dir = sys.argv[3]
-	output_data_dir = sys.argv[4]
+	input_csv = sys.argv[1]
+	input_data_dir = sys.argv[2]
+	output_data_dir = sys.argv[3]
 
 	utterances = get_utterances(input_csv)
 

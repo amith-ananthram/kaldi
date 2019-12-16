@@ -20,12 +20,13 @@ MFCC_DIR="${output_path}/mfcc"
 # prepare the corpus for feature extraction
 if [ $stage -eq 0 ]; then
 	for session in 1 2 3 4 5; do
+		session_output_path="${output_path}/session${session}"
+		mkdir -p $session_output_path
 		generate_iemocap_inputs.py \
-			"session${session}" \
 			"${CSVS_DIR}/Session${session}.csv" \
 			"${DATA_DIR}/Session${session}/sentences/wav" \
-			"${output_path}/session${session}"
-		utils/utt2spk_to_spk2utt.pl "${output_path}/session${session}/utt2spk" > "${output_path}/session${session}/spk2utt"
+			$session_output_path
+		utils/utt2spk_to_spk2utt.pl "${session_output_path}/utt2spk" > "${session_output_path}/spk2utt"
 	done
 	utils/combine_data.sh "${output_path}/all_iemocap" "${output_path}/session1" "${output_path}/session2" "${output_path}/session3" "${output_path}/session4" "${output_path}/session5"
 fi
