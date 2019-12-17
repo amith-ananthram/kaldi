@@ -24,8 +24,9 @@ class UtteranceDetails:
 		return "%s: %s" % (self.get_filename(), self.utterance)
 
 	def get_id(self):
-		return "Ses%s%s_%s%s_%s%s" % (
-			self.session,
+		return "%s_Ses%s%s_%s%s_%s%s" % (
+			self.emotion_label,
+                        self.session,
 			self.mocap_source,
 			self.get_dialogue_type_shortname(),
 			self.dialogue_number,
@@ -48,7 +49,7 @@ class UtteranceDetails:
 			self.mocap_source,
 			self.get_dialogue_type_shortname(),
 			self.dialogue_number,
-			self.get_id()
+                        self.get_id()[2:]
 		)
 
 def get_utterances(input_csv):
@@ -110,6 +111,8 @@ def generate_wavscp(utterances, input_data_dir, output_data_dir):
 	with open(os.path.join(output_data_dir, WAV_FILE), 'w') as f:
 		for utterance in sorted(utterances, key=lambda utterance: utterance.get_id()):
 			wav_file_path = os.path.join(input_data_dir, utterance.get_filename())
+                        if not os.path.exists(wav_file_path):
+                            raise Exception('Missing file: %s' % (utterance.get_id()))
 			wav_creation_cmd = "ffmpeg -v 8 -i %s -f wav -ar 16000 -acodec pcm_s16le -|" % (wav_file_path)
 			f.write("%s %s\n" % (utterance.get_id(), wav_creation_cmd))
 
