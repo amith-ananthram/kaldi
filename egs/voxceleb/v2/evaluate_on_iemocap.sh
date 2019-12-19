@@ -45,11 +45,23 @@ fi
 if [ $stage -eq 2 ]; then
         echo "Stage 2: start"
 	mkdir -p "${output_path}/predictions"
-	for mode in no_sil with_sil; do
-		for min_frame_len in 100 150 200 250 300; do 
-			model="${mode}_${min_frame_len}"
-			nnet3-compute-batch "${model_path}/${model}.raw" scp:${output_path}/all_iemocap/feats.scp ark:${output_path}/predictions/${model}_prediction.ark
-        	done
+	for layers in seven_layers eight_layers; do
+		for mode in no_sil with_sil; do
+			for min_frame_len in 100 150 200 250 300; do 
+				model="${layers}_${mode}_${min_frame_len}"
+				if [ ! -f "${model_path}/${model}.raw" ]
+				then
+					echo "${model} does not exist!"
+					continue
+				fi
+				if [ -f "${output_path}/predictions/${model}_prediction.ark" ]
+				then
+					echo "${model} predictions exist, skipping"
+					continue
+				fi
+				nnet3-compute-batch "${model_path}/${model}.raw" scp:${output_path}/all_iemocap/feats.scp ark:${output_path}/predictions/${model}_prediction.ark
+        		done
+		done
 	done
 	echo "Stage 2: end"
 fi
@@ -58,14 +70,16 @@ fi
 if [ $stage -eq 3 ]; then
 	echo "Stage 3: start"
 	mkdir -p "${output_path}/scores"
-	for mode in no_sil with_sil; do
-		for min_frame_len in 100 150 200 250 300; do
-			model="${mode}_${min_frame_len}"
-			score_emotion_prediction_results.py \
-				$model \
-				"${output_path}/all_iemocap/utt2spk" \
-				"${output_path}/predictions/${model}_prediction.ark" \
-				"${output_path}/scores"
+	for layers in seven_layers eight_layers; do
+		for mode in no_sil with_sil; do
+			for min_frame_len in 100 150 200 250 300; do
+				model="${layers}_${mode}_${min_frame_len}"
+				score_emotion_prediction_results.py \
+					$model \
+					"${output_path}/all_iemocap/utt2spk" \
+					"${output_path}/predictions/${model}_prediction.ark" \
+					"${output_path}/scores"
+			done
 		done
 	done
         echo "Stage 3: end"

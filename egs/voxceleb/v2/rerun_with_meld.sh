@@ -144,9 +144,13 @@ if [ $stage -le 6 ]; then
   # This script applies CMVN and removes nonspeech frames.  Note that this is somewhat
   # wasteful, as it roughly doubles the amount of training data on disk.  After
   # creating training examples, this can be removed.
-  local/nnet3/xvector/prepare_feats_for_egs.sh --nj 40 --cmd "$train_cmd" \
-    ${data_dir}/train_combined ${data_dir}/train_combined_no_sil ${root}/exp/train_combined_no_sil
-  utils/fix_data_dir.sh ${data_dir}/train_combined_no_sil
+  rm -rf ${data_dir}/train_combined_no_sil
+  # local/nnet3/xvector/prepare_feats_for_egs.sh --nj 40 --cmd "$train_cmd" \
+  #	${data_dir}/train_combined ${data_dir}/train_combined_no_sil ${root}/exp/train_combined_no_sil
+  # utils/fix_data_dir.sh ${data_dir}/train_combined_no_sil
+  
+  # if you want to include silence frames, uncomment the below line
+  cp -r ${data_dir}/train_combined ${data_dir}/train_combined_no_sil
   echo "stage 6: end"
 fi
 
@@ -156,7 +160,7 @@ if [ $stage -le 7 ]; then
   echo "stage 7: start"
   # Now, we need to remove features that are too short after removing silence
   # frames.  We want atleast ~1s (100 frames) per utterance. (note this is smaller than in v2/run.sh)
-  min_len=100
+  min_len=250
   mv ${data_dir}/train_combined_no_sil/utt2num_frames ${data_dir}/train_combined_no_sil/utt2num_frames.bak
   awk -v min_len=${min_len} '$2 > min_len {print $1, $2}' ${data_dir}/train_combined_no_sil/utt2num_frames.bak > ${data_dir}/train_combined_no_sil/utt2num_frames
   utils/filter_scp.pl ${data_dir}/train_combined_no_sil/utt2num_frames ${data_dir}/train_combined_no_sil/utt2spk > ${data_dir}/train_combined_no_sil/utt2spk.new

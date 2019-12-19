@@ -82,6 +82,7 @@ if [ $stage -eq 1 ]; then
 		# This is where another layer the embedding could be extracted
 		# from, but usually the previous one works better.
 		relu-batchnorm-layer name=tdnn7 dim=512
+		# relu-batchnorm-layer name=tdnn8 dim=512
 		output-layer name=output include-log-softmax=true dim=${num_targets}
 	EOF
 

@@ -66,7 +66,7 @@ if [ $stage -le 8 ]; then
     --frames-per-iter 25000000 \
     --frames-per-iter-diagnostic 100000 \
     --min-frames-per-chunk 50 \
-    --max-frames-per-chunk 100 \
+    --max-frames-per-chunk 250 \
     --num-diagnostic-archives 3 \
     --num-repeats 500 \
     "$data" $egs_dir
@@ -88,7 +88,7 @@ if [ $stage -eq 9 ]; then
     --trainer.optimization.minibatch-size=64 \
     --trainer.srand=$srand \
     --trainer.max-param-change=2 \
-    --trainer.num-epochs=3 \
+    --trainer.num-epochs=6 \
     --trainer.dropout-schedule="$dropout_schedule" \
     --trainer.shuffle-buffer-size=1000 \
     --egs.frames-per-eg=1 \
