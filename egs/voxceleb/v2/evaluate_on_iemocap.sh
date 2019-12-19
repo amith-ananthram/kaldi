@@ -38,12 +38,12 @@ if [ $stage -eq 1 ]; then
 	steps/make_mfcc_pitch.sh --write-utt2num-frames true --mfcc-config conf/mfcc.conf --pitch-config conf/pitch.conf --nj 40 --cmd "$train_cmd" \
 		"${output_path}/all_iemocap" ${BASE_DIR}/exp/make_mfcc $MFCC_DIR
 	utils/fix_data_dir.sh "${output_path}/all_iemocap"
-        echo "Stage 1: end"
+	echo "Stage 1: end"
 fi
 
 # run extracted features through the nnet
 if [ $stage -eq 2 ]; then
-        echo "Stage 2: start"
+		echo "Stage 2: start"
 	mkdir -p "${output_path}/predictions"
 	for layers in seven_layers eight_layers; do
 		for mode in no_sil with_sil; do
@@ -60,7 +60,7 @@ if [ $stage -eq 2 ]; then
 					continue
 				fi
 				nnet3-compute-batch "${model_path}/${model}.raw" scp:${output_path}/all_iemocap/feats.scp ark:${output_path}/predictions/${model}_prediction.ark
-        		done
+				done
 		done
 	done
 	echo "Stage 2: end"
@@ -82,5 +82,5 @@ if [ $stage -eq 3 ]; then
 			done
 		done
 	done
-        echo "Stage 3: end"
+	echo "Stage 3: end"
 fi
