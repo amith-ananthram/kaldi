@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# author: aa4461
+
 import sys
 import os.path
 import scoring_utils

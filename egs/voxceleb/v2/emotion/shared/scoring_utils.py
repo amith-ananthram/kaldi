@@ -1,3 +1,5 @@
+# author: aa4461
+
 import os.path
 import kaldi_io
 import numpy as np

@@ -1,3 +1,5 @@
+# author: aa4461
+
 . ./cmd.sh
 . ./path.sh
 

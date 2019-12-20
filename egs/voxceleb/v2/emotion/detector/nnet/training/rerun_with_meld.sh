@@ -1,12 +1,6 @@
 #!/bin/bash
-# Adapted from v2/run.sh (copyright information for whcih is below)
-# Copyright   2017   Johns Hopkins University (Author: Daniel Garcia-Romero)
-#             2017   Johns Hopkins University (Author: Daniel Povey)
-#        2017-2018   David Snyder
-#             2018   Ewald Enzinger
-# Apache 2.0.
-#
-# See ../MELD_README.txt for more info on data required.
+
+# author: aa4461, adapted from v2/run.sh
 
 . ./cmd.sh
 . ./path.sh

@@ -31,7 +31,7 @@ corpora -- those cases are noted below.
 
 - emotion
 	- detector
-		- nnet
+		- nnet (author: aa4461)
 			- pretrained
 				- models
 				- predictions
@@ -40,20 +40,26 @@ corpora -- those cases are noted below.
 
 To kick off training of the various neural nets (the base speaker identification model and all
 the variants of the augmented emotion detection model), please run:
-[TO DO]
+scripts/[TO DO]
 
 To kick off scoring of the various neural nets (all the variants of the augment emotion detection 
 model), please run:
-[TO DO]
+scripts/[TO DO]
 
 To use a pretrained model to detect the emotion of any .wav file, please run:
-[TO DO]
+scripts/[TO DO]
 
 --
 - EMOTION CONVERSION 
 --
 
 - emotion
-	- converter
+	- converter (author: aa4461)
 		- training
 		- scoring
+
+To kick off training of the various neural nets (variants of the autoencoder), please run:
+scripts/[TO DO]
+
+To use a pretrained model to convert the emotion of any .wav file, please run:
+scripts/[TO DO]

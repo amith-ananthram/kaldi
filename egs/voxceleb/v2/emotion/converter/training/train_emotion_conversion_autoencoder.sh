@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# author: aa4461
+
 # add compiled Kaldi executables to the path
 . ./cmd.sh
 . ./path.sh
