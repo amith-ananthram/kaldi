@@ -172,3 +172,52 @@ if [ $stage -eq 4 ]; then
 
 	echo "STAGE 4 END: concatenating target emotion as 34th feature"
 fi
+
+# generate training egs from training featureset
+if [ $stage -eq 5 ]; then
+	echo "STAGE 5 START: generating egs for neural net training"
+
+	sid/nnet3/xvector/get_egs.sh --cmd "$train_cmd" \
+	    --nj 8 \
+	    --stage 0 \
+	    --frames-per-iter 25000000 \
+	    --frames-per-iter-diagnostic 100000 \
+	    --min-frames-per-chunk 50 \
+	    --max-frames-per-chunk 250 \
+	    --num-diagnostic-archives 3 \
+	    --num-repeats 500 \
+	    $DATA_OUTPUT_DIR $BASE_DIR/egs
+
+	echo "STAGE 5 END: generating egs for neural net training"
+fi
+
+# train the autoencoder
+if [ $stage -eq 6 ]; then
+	echo "STAGE 6 START: training neural net!"
+
+	dropout_schedule='0,0@0.20,0.1@0.50,0'
+	srand=123
+	steps/nnet3/train_raw_dnn.py --stage=$train_stage \
+	    --cmd="$train_cmd" \
+	    --trainer.input-model $MODEL_OUTPUT_DIR/$MODIFIED_REFERENCE_MODEL \
+	    --trainer.optimization.proportional-shrink 10 \
+	    --trainer.optimization.momentum=0.5 \
+	    --trainer.optimization.num-jobs-initial=1 \
+	    --trainer.optimization.num-jobs-final=3 \
+	    --trainer.optimization.initial-effective-lrate=0.001 \
+	    --trainer.optimization.final-effective-lrate=0.0001 \
+	    --trainer.optimization.minibatch-size=64 \
+	    --trainer.srand=$srand \
+	    --trainer.max-param-change=2 \
+	    --trainer.num-epochs=6 \
+	    --trainer.dropout-schedule="$dropout_schedule" \
+	    --trainer.shuffle-buffer-size=1000 \
+	    --egs.frames-per-eg=1 \
+	    --egs.dir=$BASE_DIR/egs \
+	    --cleanup.remove-egs $remove_egs \
+	    --cleanup.preserve-model-interval=10 \
+	    --use-gpu=wait \
+	    --dir=$BASE_DIR/nnet  || exit 1;
+
+	echo "STAGE 6 END: training neural net!"
+fi
