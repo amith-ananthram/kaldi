@@ -163,12 +163,12 @@ if [ $stage -eq 4 ]; then
 	echo "STAGE 4 START: concatenating target emotion as 34th feature"
 
 	expanded_feature_dir=${BASE_DIR}/mfcc_and_target
-	rmdir -rf $expanded_feature_dir
+	rm -rf $expanded_feature_dir
 	mkdir -p $expanded_feature_dir
 
 	expand_mfccs_and_pitch_features_with_target_emotion.py ${BASE_DIR}/mfcc $expanded_feature_dir
 
-	cat ${BASE_DIR}/mfcc_and_target/*scp > ${BASE_DIR}/mfcc_and_target/feats.scp
+	cat ${BASE_DIR}/mfcc_and_target/*scp > $DATA_OUTPUT_DIR/feats.scp
 
 	echo "STAGE 4 END: concatenating target emotion as 34th feature"
 fi

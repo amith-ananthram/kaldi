@@ -18,11 +18,11 @@ def write_expanded_feature(raw_mfcc_and_pitch_file, output_data_dir):
 		expanded_feature = np.append(features, target_emotion_column, 1)
 		expanded_features[utt] = expanded_feature
 
-	(_, split, _) = line.split('.', 2)
+	(_, split, _) = raw_mfcc_and_pitch_file.split('.', 2)
 	kaldiio.save_ark(
-		os.path.join(output_data_dir, 'mfcc_pitch_and_target_emotion.%s.ark' % (split), 
+		os.path.join(output_data_dir, 'mfcc_pitch_and_target_emotion.%s.ark' % (split)), 
 		expanded_features, 
-		scp=os.path.join(output_data_dir, 'mfcc_pitch_and_target_emotion.%s.scp' % (split)
+		scp=os.path.join(output_data_dir, 'mfcc_pitch_and_target_emotion.%s.scp' % (split))
 	)
 
 def main():
@@ -30,7 +30,7 @@ def main():
 	output_data_dir = sys.argv[2]
 
 	for raw_mfcc_and_pitch_file in glob.glob('%s/*ark' % (input_data_dir)):
-		write_expanded_feature(raw_mfcc_and_pitch_file)
+		write_expanded_feature(raw_mfcc_and_pitch_file, output_data_dir)
 
 if __name__ == "__main__":
 	main()
