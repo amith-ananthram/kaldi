@@ -92,7 +92,7 @@ def score(experiment_name, utt2labels, utt2predictions, resolution_method):
 	scoring_results = ScoringResults(experiment_name)
 	for utterance in reduce(set.union, (set(d.keys()) for d in [utt2labels, utt2predictions])):
 		label = utt2labels[utterance]
-		predictions_by_frame = utt2predictions[utterance]
+		predictions_by_frame = utt2predictions[utterance] if utterance in utt2predictions else []
 		
 		if label == None:
 			scoring_results.add_missing_label(utterance)
