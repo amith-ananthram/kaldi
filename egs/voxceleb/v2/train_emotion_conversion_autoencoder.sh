@@ -22,6 +22,11 @@ NUM_FEAT_DIMENSIONS=33
 # we're mapping to in MELD (for our updated output layer)
 NUM_TARGET_DIMENSIONS=5
 
+# the minimum utterance length (in frames) that we'll
+# train the autoencoder on; for now, we keep it in sync
+# with whatever the discriminator was trained on
+MIN_UTT_LENGTH=250
+
 # set up expected input directory structure,
 # copy reference model and source data for training sets
 if [ $stage -eq 0 ]; then
@@ -173,9 +178,22 @@ if [ $stage -eq 4 ]; then
 	echo "STAGE 4 END: concatenating target emotion as 34th feature"
 fi
 
-# generate training egs from training featureset
+# filter out utterances that are too short
 if [ $stage -eq 5 ]; then
-	echo "STAGE 5 START: generating egs for neural net training"
+	echo "STAGE 5 START: filtering out utterances that are too short"
+
+	mv $DATA_OUTPUT_DIR/utt2num_frames $DATA_OUTPUT_DIR/utt2num_frames.bak
+	awk -v min_len=$MIN_UTT_LENGTH '$2 > min_len {print $1, $2}' $DATA_OUTPUT_DIR/utt2num_frames.bak > $DATA_OUTPUT_DIR/utt2num_frames
+	utils/filter_scp.pl $DATA_OUTPUT_DIR/utt2num_frames $DATA_OUTPUT_DIR/utt2spk > $DATA_OUTPUT_DIR/utt2spk.new
+	mv $DATA_OUTPUT_DIR/utt2spk.new $DATA_OUTPUT_DIR/utt2spk
+	utils/fix_data_dir.sh $DATA_OUTPUT_DIR
+
+	echo "STAGE 5 END: filtering out utterances that are too short"
+fi
+
+# generate training egs from training featureset
+if [ $stage -eq 6 ]; then
+	echo "STAGE 6 START: generating egs for neural net training"
 
 	sid/nnet3/xvector/get_egs.sh --cmd "$train_cmd" \
 	    --nj 8 \
@@ -183,17 +201,17 @@ if [ $stage -eq 5 ]; then
 	    --frames-per-iter 25000000 \
 	    --frames-per-iter-diagnostic 100000 \
 	    --min-frames-per-chunk 50 \
-	    --max-frames-per-chunk 250 \
+	    --max-frames-per-chunk $MIN_UTT_LENGTH \
 	    --num-diagnostic-archives 3 \
 	    --num-repeats 500 \
 	    $DATA_OUTPUT_DIR $BASE_DIR/egs
 
-	echo "STAGE 5 END: generating egs for neural net training"
+	echo "STAGE 6 END: generating egs for neural net training"
 fi
 
 # train the autoencoder
-if [ $stage -eq 6 ]; then
-	echo "STAGE 6 START: training neural net!"
+if [ $stage -eq 7 ]; then
+	echo "STAGE 7 START: training neural net!"
 
 	dropout_schedule='0,0@0.20,0.1@0.50,0'
 	srand=123
@@ -219,5 +237,5 @@ if [ $stage -eq 6 ]; then
 	    --use-gpu=wait \
 	    --dir=$BASE_DIR/nnet  || exit 1;
 
-	echo "STAGE 6 END: training neural net!"
+	echo "STAGE 7 END: training neural net!"
 fi

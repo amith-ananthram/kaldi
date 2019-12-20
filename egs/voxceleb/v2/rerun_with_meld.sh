@@ -167,11 +167,6 @@ if [ $stage -le 7 ]; then
   mv ${data_dir}/train_combined_no_sil/utt2spk.new ${data_dir}/train_combined_no_sil/utt2spk
   utils/fix_data_dir.sh ${data_dir}/train_combined_no_sil
 
-  utils/filter_scp.pl ${data_dir}/train_combined_no_sil/utt2spk ${data_dir}/train_combined_no_sil/utt2num_frames > ${data_dir}/train_combined_no_sil/utt2num_frames.new
-  mv ${data_dir}/train_combined_no_sil/utt2num_frames.new ${data_dir}/train_combined_no_sil/utt2num_frames
-
-  # Now we're ready to create training examples.
-  utils/fix_data_dir.sh ${data_dir}/train_combined_no_sil
   echo "stage 7: end"
 fi
 
