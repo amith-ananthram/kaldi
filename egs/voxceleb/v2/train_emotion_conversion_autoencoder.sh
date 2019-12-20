@@ -55,6 +55,8 @@ if [ $stage -eq 0 ]; then
 	echo "Stage 0: end"
 fi
 
+# convert the reference model (the trained emotion detector) into an autoencoder 
+# (we use the emotion detector as its final pinned layers to guide training)
 if [ $stage -eq 1 ]; then
 	echo "Stage 1: start"
 	# first, we delete everything that's already
@@ -77,8 +79,8 @@ if [ $stage -eq 1 ]; then
 		# autoencoder layers
 		input dim=${input_dim} name=input
 		relu-batchnorm-layer name=tdnn-3 dim=1024 input=Append(-2,-1,0,1,2)
-  		relu-batchnorm-layer name=tdnn-2 dim=512 input=Append(-1,2)
-  		relu-batchnorm-layer name=tdnn-1 dim=${latent_dim} input=Append(-3,3)
+		relu-batchnorm-layer name=tdnn-2 dim=512 input=Append(-1,2)
+		relu-batchnorm-layer name=tdnn-1 dim=${latent_dim} input=Append(-3,3)
 
 		# below are the layers from our pre-trained emotion discriminator
 		# (left unchanged so we reuse their weights -- learning rates are 0 below)
@@ -105,6 +107,9 @@ if [ $stage -eq 1 ]; then
 		--config-dir $MODEL_OUTPUT_DIR/configs/
 	cp $MODEL_OUTPUT_DIR/configs/final.config $MODEL_OUTPUT_DIR/modified_nnet.config
 
+	# we'll use this to extract emotion-converted frames from the model
+	echo "output-node name=output input=tdnn-1.affine" > $MODEL_OUTPUT_DIR/extract.config
+
 	# now, with our updated target config in hand, we copy our
 	# reference model, modifying its final output layer and setting
 	# the learning rates for the first 6 layers to 0
@@ -127,7 +132,19 @@ if [ $stage -eq 1 ]; then
 	echo "Stage 1: end"
 fi
 
+# select training examples from MELD and IEMOCAP based on
+# how well the detector classifies them (choose only high accuracy examples)
 if [ $stage -eq 2 ]; then
 	generate_emotion_conversion_inputs.py $DATA_INPUT_DIR $DATA_OUTPUT_DIR
 	utils/utt2spk_to_spk2utt.pl $DATA_OUTPUT_DIR/utt2spk > $DATA_OUTPUT_DIR/spk2utt
+fi
+
+# generate MFCC and pitch features for our training examples
+if [ $stage -eq 3 ]; then
+	echo "Stage 3: start"
+	# Make MFCCs and compute the energy-based VAD for each dataset
+	steps/make_mfcc_pitch.sh --write-utt2num-frames true --mfcc-config conf/mfcc.conf --pitch-config conf/pitch.conf --nj 40 --cmd "$train_cmd" \
+		$DATA_OUTPUT_DIR ${BASE_DIR}/exp/make_mfcc ${BASE_DIR}/mfcc
+	utils/fix_data_dir.sh $DATA_OUTPUT_DIR
+  	echo "Stage 3: end"
 fi
