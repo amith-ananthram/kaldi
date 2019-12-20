@@ -7,6 +7,11 @@
 # hard fail on errors in the script
 set -e
 
+stage=placeholder
+discriminator_model="seven_layers_with_sil_250.raw"
+
+. ./utils/parse_options.sh
+
 # this should be set to our underlying feature dimensionality
 # (ie # of MFCC + pitch features, so 33); this will be the 
 # dimensionality of our encoded frames in latent space
@@ -31,6 +36,9 @@ if [ $stage -eq 0 ]; then
 			sudo chmod -R 775 $dir
 		fi
 	done
+
+	# copy the specified discriminator into our MODEL_INPUT_DIR
+	cp models/$discriminator_model $MODEL_INPUT_DIR/$BASE_REFERENCE_MODEL
 fi
 
 if [ $stage -eq 1 ]; then
