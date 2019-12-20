@@ -24,7 +24,7 @@ def get_wav_labels_and_predictions(input_dir, prefix):
 	utts_to_wav_creation = {}
 	with open(os.path.join(input_dir, '%s_%s' % (prefix, WAV_FILE)), 'r') as f:
 		for line in f:
-			(utt, wav_creation) = line.split(maxsplit=1)
+			(utt, wav_creation) = line.split(None, 1)
 			if utt in utts_to_wav_creation:
 				raise Exception('%s duped in %s wav file' % (utt, prefix))
 			utts_to_wav_creation[utt] = wav_creation
@@ -32,12 +32,13 @@ def get_wav_labels_and_predictions(input_dir, prefix):
 	utts_to_labels = {}
 	with open(os.path.join(input_dir, '%s_%s' % (prefix, UTT2SPK_FILE)), 'r') as f:
 		for line in f:
-			(utt, label) = line.split(maxsplit=1)
+			(utt, label) = line.split(None, 1)
 			if utt in utts_to_labels:
 				raise Exception('%s duped in %s utt2spk file' % (utt, prefix))
 			utts_to_labels[utt] = label
 
-	utts_to_predictions = scoring_utils.parse_predictions_ark('%s_%s' % (prefix, PREDICTIONS_FILE))
+	utts_to_predictions = scoring_utils.parse_predictions_ark(
+                os.path.join(input_dir, '%s_%s' % (prefix, PREDICTIONS_FILE)))
 
 	return (utts_to_wav_creation, utts_to_labels, utts_to_predictions)
 

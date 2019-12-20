@@ -53,8 +53,8 @@ def parse_utt2labels(filepath):
 def parse_predictions_ark(filepath):
 	utt2predictions = {}
 	for utterance_id, predictions in kaldi_io.read_mat_ark(filepath):
-		if utt in utt2predictions:
-			raise Exception('%s duped in %s' % (utt, filepath))
+		if utterance_id in utt2predictions:
+			raise Exception('%s duped in %s' % (utterance_id, filepath))
 		utt2predictions[utterance_id] = predictions
 	return utt2predictions
 

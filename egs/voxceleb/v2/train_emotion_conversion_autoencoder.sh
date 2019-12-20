@@ -8,7 +8,7 @@
 set -e
 
 stage=placeholder
-discriminator_model="seven_layers_with_sil_250.raw"
+discriminator_model="seven_layers_with_sil_250"
 
 . ./utils/parse_options.sh
 
@@ -41,7 +41,7 @@ if [ $stage -eq 0 ]; then
 	done
 
 	# copy the specified discriminator into our MODEL_INPUT_DIR
-	cp models/$discriminator_model $MODEL_INPUT_DIR/$BASE_REFERENCE_MODEL
+	cp models/${discriminator_model}.raw $MODEL_INPUT_DIR/$BASE_REFERENCE_MODEL
 
 	# copy the MELD and IEMOCAP features, labels, predictions for the specified discriminator
 	cp meld/outputs/data/all_meld/wav.scp $DATA_INPUT_DIR/meld_wav.scp
