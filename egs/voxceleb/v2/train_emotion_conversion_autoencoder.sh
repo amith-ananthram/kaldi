@@ -21,6 +21,8 @@ NUM_FEAT_DIMENSIONS=33
 # we're mapping to in MELD (for our updated output layer)
 NUM_TARGET_DIMENSIONS=5
 
+# set up expected input directory structure,
+# copy reference model and source data for training sets
 if [ $stage -eq 0 ]; then
 	echo "Stage 0: start"
 	dirs=(
@@ -40,6 +42,16 @@ if [ $stage -eq 0 ]; then
 
 	# copy the specified discriminator into our MODEL_INPUT_DIR
 	cp models/$discriminator_model $MODEL_INPUT_DIR/$BASE_REFERENCE_MODEL
+
+	# copy the MELD and IEMOCAP features, labels, predictions for the specified discriminator
+	cp meld/outputs/data/all_meld/wav.scp $DATA_INPUT_DIR/meld_wav.scp
+	cp meld/outputs/data/all_meld/utt2spk $DATA_INPUT_DIR/meld_utt2spk
+	cp meld/predictions/${discriminator_model}_prediction.ark $DATA_INPUT_DIR/meld_predictions.ark
+
+	cp iemocap/all_iemocap/wav.scp $DATA_INPUT_DIR/iemocap_wav.scp
+	cp iemocap/all_iemocap/utt2spk $DATA_INPUT_DIR/iemocap_utt2spk
+	cp iemocap/predictions/${discriminator_model}_prediction.ark $DATA_INPUT_DIR/iemocap_predictions.ark
+
 	echo "Stage 0: end"
 fi
 
@@ -113,4 +125,9 @@ if [ $stage -eq 1 ]; then
 
 	nnet3-info $MODEL_OUTPUT_DIR/$MODIFIED_REFERENCE_MODEL		
 	echo "Stage 1: end"
+fi
+
+if [ $stage -eq 2 ]; then
+	generate_emotion_conversion_inputs.py $DATA_INPUT_DIR $DATA_OUTPUT_DIR
+	utils/utt2spk_to_spk2utt.pl $DATA_OUTPUT_DIR/utt2spk > $DATA_OUTPUT_DIR/spk2utt
 fi
