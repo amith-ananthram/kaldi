@@ -4,21 +4,11 @@ import sys
 import os.path
 import scoring_utils
 
+NUM_EMOTIONS = 5
+
 UTT2SPK_FILE = 'utt2spk'
 WAV_FILE = 'wav.scp'
 PREDICTIONS_FILE = 'predictions.ark'
-
-#def generate_utt2spk(utterances, output_data_dir):
-#	with open(os.path.join(output_data_dir, UTT2SPK_FILE), 'w') as f:
-#		for utterance in sorted(utterances, key=lambda utterance: utterance.get_id()):
-#			f.write("%s %s\n" % (utterance.get_id(), EMOTION_TO_ID[utterance.emotion]))
-
-#def generate_wavscp(utterances, input_data_dir, output_data_dir):
-#	with open(os.path.join(output_data_dir, WAV_FILE), 'w') as f:
-#		for utterance in sorted(utterances, key=lambda utterance: utterance.get_id()):
-#			mp4_file_path = os.path.join(input_data_dir, utterance.get_filename())
-#			wav_creation_cmd = "ffmpeg -v 8 -i %s -f wav -ar 16000 -acodec pcm_s16le -|" % (mp4_file_path)
-#			f.write("%s %s\n" % (utterance.get_id(), wav_creation_cmd))
 
 def get_wav_labels_and_predictions(input_dir, prefix):
 	utts_to_wav_creation = {}
@@ -51,6 +41,24 @@ def get_correctly_predicted_utterances(utt_to_labels, utt_to_predictions):
 			correctly_predicted.append(utt)
 	return correctly_predicted
 
+def get_training_examples(utts, utts_to_wav_creation):
+	training_examples = []
+	for utt in utts:
+		_, base_utt = utt.split('_', 1)
+		for emotion in range(0, NUM_EMOTIONS):
+			training_examples.append(('%s_%s' % (emotion, base_utt), emotion, utts_to_wav_creation[utt]))
+	return training_examples
+
+def generate_utt2spk(utterances, output_data_dir):
+	with open(os.path.join(output_data_dir, UTT2SPK_FILE), 'w') as f:
+		for utterance in sorted(utterances, key=lambda utterance: utterance[0]:
+			f.write("%s %s\n" % (utterance[0], utterance[1]))
+
+def generate_wavscp(utterances, input_data_dir, output_data_dir):
+	with open(os.path.join(output_data_dir, WAV_FILE), 'w') as f:
+		for utterance in sorted(utterances, key=lambda utterance: utterance[0]):
+			f.write("%s %s\n" % (utterance[0], utterance[2]))
+
 def main():
 	input_data_dir = sys.argv[1]
 	output_data_dir = sys.argv[2]
@@ -64,10 +72,12 @@ def main():
 	print('Generating a training corpus using %s correctly predicted utterances (%s from MELD, %s from IEMOCAP)'
 		% (len(meld_correctly_predicted) + len(iemocap_correctly_predicted), len(meld_correctly_predicted), len(iemocap_correctly_predicted)))
 
-	# get all correctly labeled IEMOCAP examples
-	# get all correctly labeled MELD examples
-	# generate new utterance ids for them (for all utterances), utt2spk accordingly
-	# use the filepath in wav.scp for all of them
+	training_examples = []
+	training_examples.concat(get_training_examples(meld_correctly_predicted, meld_wav))
+	training_examples.concat(get_training_examples(iemocap_correctly_predicted, iemocap_wav))
+
+	generate_utt2spk(training_examples, output_data_dir)
+	generate_wavscp(training_examples, output_data_dir)
 
 if __name__ == "__main__":
 	main()
