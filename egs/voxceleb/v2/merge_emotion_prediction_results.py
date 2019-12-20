@@ -18,8 +18,8 @@ def main():
 
 	all_predictions = get_predictions(prediction_filepaths)
 	with open(output_filepath, 'wb') as f:
-  		for utterance_id, prediction in all_predictions.iteritems(): 
-    		kaldi_io.write_mat(f, prediction, key=utterance_id)
+		for utterance_id, prediction in all_predictions.iteritems(): 
+			kaldi_io.write_mat(f, prediction, key=utterance_id)
 
 if __name__ == "__main__":
 	main()
