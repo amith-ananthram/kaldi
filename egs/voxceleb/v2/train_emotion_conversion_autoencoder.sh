@@ -198,7 +198,7 @@ if [ $stage -eq 6 ]; then
 	sid/nnet3/xvector/get_egs.sh --cmd "$train_cmd" \
 	    --nj 8 \
 	    --stage 0 \
-	    --frames-per-iter 25000000 \
+	    --frames-per-iter 75000000 \
 	    --frames-per-iter-diagnostic 100000 \
 	    --min-frames-per-chunk 50 \
 	    --max-frames-per-chunk $MIN_UTT_LENGTH \
@@ -227,7 +227,7 @@ if [ $stage -eq 7 ]; then
 	    --trainer.optimization.minibatch-size=64 \
 	    --trainer.srand=$srand \
 	    --trainer.max-param-change=2 \
-	    --trainer.num-epochs=6 \
+	    --trainer.num-epochs=3 \
 	    --trainer.dropout-schedule="$dropout_schedule" \
 	    --trainer.shuffle-buffer-size=1000 \
 	    --egs.frames-per-eg=1 \
