@@ -9,6 +9,7 @@
 set -e
 
 stage=placeholder
+train_stage=-1
 discriminator_model="seven_layers_with_sil_250"
 
 . ./utils/parse_options.sh
