@@ -214,6 +214,8 @@ fi
 if [ $stage -eq 7 ]; then
 	echo "STAGE 7 START: training neural net!"
 
+	mkdir -p $BASE_DIR/nnet
+
 	dropout_schedule='0,0@0.20,0.1@0.50,0'
 	srand=123
 	steps/nnet3/train_raw_dnn.py --stage=$train_stage \
@@ -233,7 +235,7 @@ if [ $stage -eq 7 ]; then
 	    --trainer.shuffle-buffer-size=1000 \
 	    --egs.frames-per-eg=1 \
 	    --egs.dir=$BASE_DIR/egs \
-	    --cleanup.remove-egs $remove_egs \
+	    --cleanup.remove-egs false \
 	    --cleanup.preserve-model-interval=10 \
 	    --use-gpu=wait \
 	    --dir=$BASE_DIR/nnet  || exit 1;
