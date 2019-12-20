@@ -17,7 +17,7 @@ def get_wav_labels_and_predictions(input_dir, prefix):
 			(utt, wav_creation) = line.split(None, 1)
 			if utt in utts_to_wav_creation:
 				raise Exception('%s duped in %s wav file' % (utt, prefix))
-			utts_to_wav_creation[utt] = wav_creation
+			utts_to_wav_creation[utt] = wav_creation.strip()
 
 	utts_to_labels = {}
 	with open(os.path.join(input_dir, '%s_%s' % (prefix, UTT2SPK_FILE)), 'r') as f:
@@ -25,7 +25,7 @@ def get_wav_labels_and_predictions(input_dir, prefix):
 			(utt, label) = line.split(None, 1)
 			if utt in utts_to_labels:
 				raise Exception('%s duped in %s utt2spk file' % (utt, prefix))
-			utts_to_labels[utt] = label
+			utts_to_labels[utt] = int(label)
 
 	utts_to_predictions = scoring_utils.parse_predictions_ark(
                 os.path.join(input_dir, '%s_%s' % (prefix, PREDICTIONS_FILE)))
@@ -41,20 +41,20 @@ def get_correctly_predicted_utterances(utt_to_labels, utt_to_predictions):
 			correctly_predicted.append(utt)
 	return correctly_predicted
 
-def get_training_examples(utts, utts_to_wav_creation):
+def get_training_examples(delimiter, utts, utts_to_wav_creation):
 	training_examples = []
 	for utt in utts:
-		_, base_utt = utt.split('_', 1)
+		_, base_utt = utt.split(delimiter, 1)
 		for emotion in range(0, NUM_EMOTIONS):
-			training_examples.append(('%s_%s' % (emotion, base_utt), emotion, utts_to_wav_creation[utt]))
+			training_examples.append(('%s%s%s' % (emotion, delimiter, base_utt), emotion, utts_to_wav_creation[utt]))
 	return training_examples
 
 def generate_utt2spk(utterances, output_data_dir):
 	with open(os.path.join(output_data_dir, UTT2SPK_FILE), 'w') as f:
-		for utterance in sorted(utterances, key=lambda utterance: utterance[0]:
+		for utterance in sorted(utterances, key=lambda utterance: utterance[0]):
 			f.write("%s %s\n" % (utterance[0], utterance[1]))
 
-def generate_wavscp(utterances, input_data_dir, output_data_dir):
+def generate_wavscp(utterances, output_data_dir):
 	with open(os.path.join(output_data_dir, WAV_FILE), 'w') as f:
 		for utterance in sorted(utterances, key=lambda utterance: utterance[0]):
 			f.write("%s %s\n" % (utterance[0], utterance[2]))
@@ -72,9 +72,7 @@ def main():
 	print('Generating a training corpus using %s correctly predicted utterances (%s from MELD, %s from IEMOCAP)'
 		% (len(meld_correctly_predicted) + len(iemocap_correctly_predicted), len(meld_correctly_predicted), len(iemocap_correctly_predicted)))
 
-	training_examples = []
-	training_examples.concat(get_training_examples(meld_correctly_predicted, meld_wav))
-	training_examples.concat(get_training_examples(iemocap_correctly_predicted, iemocap_wav))
+	training_examples = get_training_examples('-', meld_correctly_predicted, meld_wav) + get_training_examples('_', iemocap_correctly_predicted, iemocap_wav)
 
 	generate_utt2spk(training_examples, output_data_dir)
 	generate_wavscp(training_examples, output_data_dir)
