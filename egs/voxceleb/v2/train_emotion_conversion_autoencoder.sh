@@ -22,6 +22,7 @@ NUM_FEAT_DIMENSIONS=33
 NUM_TARGET_DIMENSIONS=5
 
 if [ $stage -eq 0 ]; then
+	echo "Stage 0: start"
 	dirs=(
 		$BASE_DIR
 		$MODEL_INPUT_DIR 
@@ -39,9 +40,11 @@ if [ $stage -eq 0 ]; then
 
 	# copy the specified discriminator into our MODEL_INPUT_DIR
 	cp models/$discriminator_model $MODEL_INPUT_DIR/$BASE_REFERENCE_MODEL
+	echo "Stage 0: end"
 fi
 
 if [ $stage -eq 1 ]; then
+	echo "Stage 1: start"
 	# first, we delete everything that's already
 	# in MODEL_OUTPUT_DIR (so we have a fresh start)
 	rm -rf "$MODEL_OUTPUT_DIR/*"
@@ -60,7 +63,7 @@ if [ $stage -eq 1 ]; then
 		# please note that it is important to have input layer with the name=input
 
 		# autoencoder layers
-		input dim=${feat_dim} name=input
+		input dim=${input_dim} name=input
 		relu-batchnorm-layer name=tdnn-3 dim=1024 input=Append(-2,-1,0,1,2)
   		relu-batchnorm-layer name=tdnn-2 dim=512 input=Append(-1,2)
   		relu-batchnorm-layer name=tdnn-1 dim=${latent_dim} input=Append(-3,3)
@@ -107,4 +110,7 @@ if [ $stage -eq 1 ]; then
 			set-learning-rate name=output* learning-rate=0;" \
 		"$MODEL_INPUT_DIR/$BASE_REFERENCE_MODEL" \
 		"$MODEL_OUTPUT_DIR/$MODIFIED_REFERENCE_MODEL" || exit 1;
+
+	nnet3-info $MODEL_OUTPUT_DIR/$MODIFIED_REFERENCE_MODEL		
+	echo "Stage 1: end"
 fi
