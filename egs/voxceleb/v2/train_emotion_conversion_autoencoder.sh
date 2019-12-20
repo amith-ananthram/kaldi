@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # add compiled Kaldi executables to the path
+. ./cmd.sh
 . ./path.sh
 . ./autoencoder_settings.sh
 
@@ -24,7 +25,8 @@ NUM_TARGET_DIMENSIONS=5
 # set up expected input directory structure,
 # copy reference model and source data for training sets
 if [ $stage -eq 0 ]; then
-	echo "Stage 0: start"
+	echo "STAGE 0 START: setting up directory structure, copying input model and data"
+
 	dirs=(
 		$BASE_DIR
 		$MODEL_INPUT_DIR 
@@ -52,13 +54,14 @@ if [ $stage -eq 0 ]; then
 	cp iemocap/all_iemocap/utt2spk $DATA_INPUT_DIR/iemocap_utt2spk
 	cp iemocap/predictions/${discriminator_model}_prediction.ark $DATA_INPUT_DIR/iemocap_predictions.ark
 
-	echo "Stage 0: end"
+	echo "STAGE 0 END: setting up directory structure, copying input model and data"
 fi
 
 # convert the reference model (the trained emotion detector) into an autoencoder 
 # (we use the emotion detector as its final pinned layers to guide training)
 if [ $stage -eq 1 ]; then
-	echo "Stage 1: start"
+	echo "STAGE 1 START: converting emotion detector into autoencoder"
+
 	# first, we delete everything that's already
 	# in MODEL_OUTPUT_DIR (so we have a fresh start)
 	rm -rf "$MODEL_OUTPUT_DIR/*"
@@ -128,23 +131,44 @@ if [ $stage -eq 1 ]; then
 		"$MODEL_INPUT_DIR/$BASE_REFERENCE_MODEL" \
 		"$MODEL_OUTPUT_DIR/$MODIFIED_REFERENCE_MODEL" || exit 1;
 
-	nnet3-info $MODEL_OUTPUT_DIR/$MODIFIED_REFERENCE_MODEL		
-	echo "Stage 1: end"
+	nnet3-info $MODEL_OUTPUT_DIR/$MODIFIED_REFERENCE_MODEL	
+
+	echo "STAGE 1 END: converting emotion detector into autoencoder"
 fi
 
 # select training examples from MELD and IEMOCAP based on
 # how well the detector classifies them (choose only high accuracy examples)
 if [ $stage -eq 2 ]; then
+	echo "STAGE 2 START: selecting training examples from MELD/IEMOCAP"
+
 	generate_emotion_conversion_inputs.py $DATA_INPUT_DIR $DATA_OUTPUT_DIR
 	utils/utt2spk_to_spk2utt.pl $DATA_OUTPUT_DIR/utt2spk > $DATA_OUTPUT_DIR/spk2utt
+
+	echo "STAGE 2 END: selecting training examples from MELD/IEMOCAP"
 fi
 
 # generate MFCC and pitch features for our training examples
 if [ $stage -eq 3 ]; then
-	echo "Stage 3: start"
-	# Make MFCCs and compute the energy-based VAD for each dataset
+	echo "STAGE 3 START: generating MFCC and pitch features"
+
 	steps/make_mfcc_pitch.sh --write-utt2num-frames true --mfcc-config conf/mfcc.conf --pitch-config conf/pitch.conf --nj 40 --cmd "$train_cmd" \
 		$DATA_OUTPUT_DIR ${BASE_DIR}/exp/make_mfcc ${BASE_DIR}/mfcc
 	utils/fix_data_dir.sh $DATA_OUTPUT_DIR
-  	echo "Stage 3: end"
+
+  	echo "STAGE 3 END: generating MFCC and pitch features"
+fi
+
+# concatenate the target emotion as the 34th feature for each of our training examples
+if [ $stage -eq 4 ]; then
+	echo "STAGE 4 START: concatenating target emotion as 34th feature"
+
+	expanded_feature_dir=${BASE_DIR}/mfcc_and_target
+	rmdir -rf $expanded_feature_dir
+	mkdir -p $expanded_feature_dir
+
+	expand_mfccs_and_pitch_features_with_target_emotion.py ${BASE_DIR}/mfcc $expanded_feature_dir
+
+	cat ${BASE_DIR}/mfcc_and_target/*scp > ${BASE_DIR}/mfcc_and_target/feats.scp
+
+	echo "STAGE 4 END: concatenating target emotion as 34th feature"
 fi
