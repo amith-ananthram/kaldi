@@ -42,6 +42,15 @@ def get_wav_labels_and_predictions(input_dir, prefix):
 
 	return (utts_to_wav_creation, utts_to_labels, utts_to_predictions)
 
+def get_correctly_predicted_utterances(utt_to_labels, utt_to_predictions):
+	correctly_predicted = []
+	for utt in utt_to_predictions.keys():
+		label = utt_to_labels[utt]
+		prediction = scoring_utils.get_most_likely_emotion(utt_to_predictions[utt])
+		if label == prediction:
+			correctly_predicted.append(utt)
+	return correctly_predicted
+
 def main():
 	input_data_dir = sys.argv[1]
 	output_data_dir = sys.argv[2]
@@ -49,12 +58,11 @@ def main():
 	meld_wav, meld_labels, meld_predictions = get_wav_labels_and_predictions(input_data_dir, 'meld')
 	iemocap_wav, iemocap_labels, iemocap_predictions = get_wav_labels_and_predictions(input_data_dir, 'iemocap')
 
-	print(meld_wav)
-	print(meld_labels)
-	print(meld_predictions)
-	print(iemocap_wav)
-	print(iemocap_labels)
-	print(iemocap_predictions)
+	meld_correctly_predicted = get_correctly_predicted_utterances(meld_labels, meld_predictions)
+	iemocap_correctly_predicted = get_correctly_predicted_utterances(iemocap_labels, iemocap_predictions)
+
+	print('Generating a training corpus using %s correctly predicted utterances (%s from MELD, %s from IEMOCAP)'
+		% (len(meld_correctly_predicted) + len(iemocap_correctly_predicted), len(meld_correctly_predicted), len(iemocap_correctly_predicted)))
 
 	# get all correctly labeled IEMOCAP examples
 	# get all correctly labeled MELD examples
