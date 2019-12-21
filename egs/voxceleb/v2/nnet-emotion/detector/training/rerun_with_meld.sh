@@ -4,12 +4,14 @@
 
 . ./cmd.sh
 . ./path.sh
-. ./meld_settings.sh
+. nnet-emotion/detector/training/meld_settings.sh
 
 set -e
 
 stage=0
 train_stage=-1
+remove_sil=true
+min_num_frames=250
 
 . ./utils/parse_options.sh
 
@@ -25,7 +27,7 @@ musan_root=corpora/musan
 if [ $stage -le 0 ]; then
   echo "stage 0: start"
 
-  prepare_meld.sh --stage 0
+  nnet-emotion/detector/training/prepare_meld.sh --stage 0
 
   echo "stage 0: end"
 fi
@@ -35,7 +37,7 @@ fi
 if [ $stage -le 1 ]; then
   echo "stage 1: start"
 
-  prepare_meld.sh --stage 1
+  nnet-emotion/detector/training/prepare_meld.sh --stage 1
 
   echo "stage 1: end"
 fi
@@ -44,7 +46,7 @@ fi
 # just over-write any existing generated input files)
 if [ $stage -le 2 ]; then
   echo "stage 2: start"
-  prepare_meld.sh --stage 2
+  nnet-emotion/detector/training/prepare_meld.sh --stage 2
   echo "stage 2: end"
 fi
 
@@ -144,12 +146,13 @@ if [ $stage -le 6 ]; then
   # wasteful, as it roughly doubles the amount of training data on disk.  After
   # creating training examples, this can be removed.
   rm -rf ${data_dir}/train_combined_no_sil
-  # local/nnet3/xvector/prepare_feats_for_egs.sh --nj 40 --cmd "$train_cmd" \
-  #	${data_dir}/train_combined ${data_dir}/train_combined_no_sil ${root}/exp/train_combined_no_sil
-  # utils/fix_data_dir.sh ${data_dir}/train_combined_no_sil
-  
-  # if you want to include silence frames, uncomment the below line
-  cp -r ${data_dir}/train_combined ${data_dir}/train_combined_no_sil
+  if [ $remove_sil ]; then
+	local/nnet3/xvector/prepare_feats_for_egs.sh --nj 40 --cmd "$train_cmd" \
+		${data_dir}/train_combined ${data_dir}/train_combined_no_sil ${root}/exp/train_combined_no_sil
+	utils/fix_data_dir.sh ${data_dir}/train_combined_no_sil
+  else 
+  	cp -r ${data_dir}/train_combined ${data_dir}/train_combined_no_sil
+  fi
   echo "stage 6: end"
 fi
 
@@ -159,7 +162,7 @@ if [ $stage -le 7 ]; then
   echo "stage 7: start"
   # Now, we need to remove features that are too short after removing silence
   # frames.  We want atleast ~1s (100 frames) per utterance. (note this is smaller than in v2/run.sh)
-  min_len=250
+  min_len=$min_num_frames
   mv ${data_dir}/train_combined_no_sil/utt2num_frames ${data_dir}/train_combined_no_sil/utt2num_frames.bak
   awk -v min_len=${min_len} '$2 > min_len {print $1, $2}' ${data_dir}/train_combined_no_sil/utt2num_frames.bak > ${data_dir}/train_combined_no_sil/utt2num_frames
   utils/filter_scp.pl ${data_dir}/train_combined_no_sil/utt2num_frames ${data_dir}/train_combined_no_sil/utt2spk > ${data_dir}/train_combined_no_sil/utt2spk.new
@@ -178,10 +181,10 @@ if [ $stage -le 8 ]; then
     --frames-per-iter 25000000 \
     --frames-per-iter-diagnostic 100000 \
     --min-frames-per-chunk 50 \
-    --max-frames-per-chunk 250 \
+    --max-frames-per-chunk $min_num_frames \
     --num-diagnostic-archives 3 \
     --num-repeats 500 \
-    "$data" $nnet_dir/egs
+    ${data_dir}/train_combined_no_sil $nnet_dir/egs
 
   echo "stage 8: end"
 fi

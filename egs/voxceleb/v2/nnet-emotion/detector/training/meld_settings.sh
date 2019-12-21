@@ -5,7 +5,7 @@
 BASE_REFERENCE_MODEL="vox2_base.raw"
 MODIFIED_REFERENCE_MODEL="vox2_modified_base.raw"
 
-BASE_DIR="meld"
+BASE_DIR="nnet-emotion/meld"
 INPUT_DIR="$BASE_DIR/inputs"
 OUTPUT_DIR="$BASE_DIR/outputs"
 MODEL_INPUT_DIR="$INPUT_DIR/reference"
