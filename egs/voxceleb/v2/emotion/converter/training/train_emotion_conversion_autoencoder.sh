@@ -5,7 +5,7 @@
 # add compiled Kaldi executables to the path
 . ./cmd.sh
 . ./path.sh
-. ./autoencoder_settings.sh
+. emotion/converter/autoencoder_settings.sh
 
 # hard fail on errors in the script
 set -e
@@ -53,16 +53,16 @@ if [ $stage -eq 0 ]; then
 	done
 
 	# copy the specified discriminator into our MODEL_INPUT_DIR
-	cp models/${discriminator_model}.raw $MODEL_INPUT_DIR/$BASE_REFERENCE_MODEL
+	cp emotion/models/${discriminator_model}.raw $MODEL_INPUT_DIR/$BASE_REFERENCE_MODEL
 
 	# copy the MELD and IEMOCAP features, labels, predictions for the specified discriminator
-	cp meld/outputs/data/all_meld/wav.scp $DATA_INPUT_DIR/meld_wav.scp
-	cp meld/outputs/data/all_meld/utt2spk $DATA_INPUT_DIR/meld_utt2spk
-	cp meld/predictions/${discriminator_model}_prediction.ark $DATA_INPUT_DIR/meld_predictions.ark
+	cp emotion/meld/outputs/data/all_meld/wav.scp $DATA_INPUT_DIR/meld_wav.scp
+	cp emotion/meld/outputs/data/all_meld/utt2spk $DATA_INPUT_DIR/meld_utt2spk
+	cp emotion/meld/predictions/${discriminator_model}_prediction.ark $DATA_INPUT_DIR/meld_predictions.ark
 
-	cp iemocap/all_iemocap/wav.scp $DATA_INPUT_DIR/iemocap_wav.scp
-	cp iemocap/all_iemocap/utt2spk $DATA_INPUT_DIR/iemocap_utt2spk
-	cp iemocap/predictions/${discriminator_model}_prediction.ark $DATA_INPUT_DIR/iemocap_predictions.ark
+	cp emotion/iemocap/all_iemocap/wav.scp $DATA_INPUT_DIR/iemocap_wav.scp
+	cp emotion/iemocap/all_iemocap/utt2spk $DATA_INPUT_DIR/iemocap_utt2spk
+	cp emotion/iemocap/predictions/${discriminator_model}_prediction.ark $DATA_INPUT_DIR/iemocap_predictions.ark
 
 	echo "STAGE 0 END: setting up directory structure, copying input model and data"
 fi
@@ -290,9 +290,8 @@ if [ $stage -eq 8 ]; then
 
 	nnet3-copy \
 		--nnet-config="$MODEL_OUTPUT_DIR/extract.config" \
-		"${encoder_architecture}_full.raw" \
-		"${encoder_architecture}_converter.raw"
-	nnet3-info "${encoder_architecture}_converter.raw"
+		"${BASE_DIR}/models/${encoder_architecture}_full.raw" \
+		"${BASE_DIR}/models/${encoder_architecture}_converter.raw"
 
 	echo "STAGE 8 END: copying model and removing detector"
 fi
