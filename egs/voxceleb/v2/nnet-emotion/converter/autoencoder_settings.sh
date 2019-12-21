@@ -5,7 +5,7 @@
 BASE_REFERENCE_MODEL="emotion_discriminator.raw"
 MODIFIED_REFERENCE_MODEL="emotion_autoencoder.raw"
 
-BASE_DIR="emotion/conversion"
+BASE_DIR="nnet-emotion/conversion"
 INPUT_DIR="$BASE_DIR/inputs"
 OUTPUT_DIR="$BASE_DIR/outputs"
 MODEL_INPUT_DIR="$INPUT_DIR/reference"

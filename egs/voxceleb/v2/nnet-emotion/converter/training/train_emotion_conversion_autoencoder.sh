@@ -5,7 +5,7 @@
 # add compiled Kaldi executables to the path
 . ./cmd.sh
 . ./path.sh
-. emotion/converter/autoencoder_settings.sh
+. nnet-emotion/converter/autoencoder_settings.sh
 
 # hard fail on errors in the script
 set -e
@@ -34,7 +34,7 @@ MIN_UTT_LENGTH=250
 
 # set up expected input directory structure,
 # copy reference model and source data for training sets
-if [ $stage -eq 0 ]; then
+if [ $stage -le 0 ]; then
 	echo "STAGE 0 START: setting up directory structure, copying input model and data"
 
 	dirs=(
@@ -53,23 +53,23 @@ if [ $stage -eq 0 ]; then
 	done
 
 	# copy the specified discriminator into our MODEL_INPUT_DIR
-	cp emotion/models/${discriminator_model}.raw $MODEL_INPUT_DIR/$BASE_REFERENCE_MODEL
+	cp ../../../../pretrained/nnet/models/${discriminator_model}.raw $MODEL_INPUT_DIR/$BASE_REFERENCE_MODEL
 
 	# copy the MELD and IEMOCAP features, labels, predictions for the specified discriminator
-	cp emotion/meld/outputs/data/all_meld/wav.scp $DATA_INPUT_DIR/meld_wav.scp
-	cp emotion/meld/outputs/data/all_meld/utt2spk $DATA_INPUT_DIR/meld_utt2spk
-	cp emotion/meld/predictions/${discriminator_model}_prediction.ark $DATA_INPUT_DIR/meld_predictions.ark
+	cp nnet-emotion/meld/outputs/data/all_meld/wav.scp $DATA_INPUT_DIR/meld_wav.scp
+	cp nnet-emotion/meld/outputs/data/all_meld/utt2spk $DATA_INPUT_DIR/meld_utt2spk
+	cp ../../../../pretrained/nnet/predictions/meld/${discriminator_model}_prediction.ark $DATA_INPUT_DIR/meld_predictions.ark
 
-	cp emotion/iemocap/all_iemocap/wav.scp $DATA_INPUT_DIR/iemocap_wav.scp
-	cp emotion/iemocap/all_iemocap/utt2spk $DATA_INPUT_DIR/iemocap_utt2spk
-	cp emotion/iemocap/predictions/${discriminator_model}_prediction.ark $DATA_INPUT_DIR/iemocap_predictions.ark
+	cp nnet-emotion/iemocap/all_iemocap/wav.scp $DATA_INPUT_DIR/iemocap_wav.scp
+	cp nnet-emotion/iemocap/all_iemocap/utt2spk $DATA_INPUT_DIR/iemocap_utt2spk
+	cp ../../../../pretrained/nnet/predictions/iemocap/${discriminator_model}_prediction.ark $DATA_INPUT_DIR/iemocap_predictions.ark
 
 	echo "STAGE 0 END: setting up directory structure, copying input model and data"
 fi
 
 # convert the reference model (the trained emotion detector) into an autoencoder 
 # (we use the emotion detector as its final pinned layers to guide training)
-if [ $stage -eq 1 ]; then
+if [ $stage -le 1 ]; then
 	echo "STAGE 1 START: converting emotion detector into autoencoder"
 
 	# first, we delete everything that's already
@@ -86,7 +86,7 @@ if [ $stage -eq 1 ]; then
 	max_chunk_size=10000
 	min_chunk_size=25
 	mkdir -p $MODEL_OUTPUT_DIR/configs
-	if [ $encoder_architecture -eq 'CNN' ]; then
+	if [ $encoder_architecture = "CNN" ]; then
 		cat <<-EOF > $MODEL_OUTPUT_DIR/configs/modified_nnet.xconfig
 			# please note that it is important to have input layer with the name=input
 
@@ -115,7 +115,7 @@ if [ $stage -eq 1 ]; then
 
 			output-layer name=output include-log-softmax=true dim=${output_dim}
 		EOF
-	elif [ $encoder_architecture -eq 'FF' ]; then
+	elif [ $encoder_architecture = "FF" ]; then
 		cat <<-EOF > $MODEL_OUTPUT_DIR/configs/modified_nnet.xconfig
 			# please note that it is important to have input layer with the name=input
 
@@ -145,7 +145,7 @@ if [ $stage -eq 1 ]; then
 			output-layer name=output include-log-softmax=true dim=${output_dim}
 		EOF
 	else 
-		echo 'Unsupported encoder architecture: ${encoder_architecture}' 1>&2
+		echo "Unsupported encoder architecture: $encoder_architecture" 1>&2
 		exit 1
 	fi
 
@@ -182,17 +182,17 @@ fi
 
 # select training examples from MELD and IEMOCAP based on
 # how well the detector classifies them (choose only high accuracy examples)
-if [ $stage -eq 2 ]; then
+if [ $stage -le 2 ]; then
 	echo "STAGE 2 START: selecting training examples from MELD/IEMOCAP"
 
-	generate_emotion_conversion_inputs.py $DATA_INPUT_DIR $DATA_OUTPUT_DIR
+	nnet-emotion/converter/training/generate_emotion_conversion_inputs.py $DATA_INPUT_DIR $DATA_OUTPUT_DIR
 	utils/utt2spk_to_spk2utt.pl $DATA_OUTPUT_DIR/utt2spk > $DATA_OUTPUT_DIR/spk2utt
 
 	echo "STAGE 2 END: selecting training examples from MELD/IEMOCAP"
 fi
 
 # generate MFCC and pitch features for our training examples
-if [ $stage -eq 3 ]; then
+if [ $stage -le 3 ]; then
 	echo "STAGE 3 START: generating MFCC and pitch features"
 
 	steps/make_mfcc_pitch.sh --write-utt2num-frames true --mfcc-config conf/mfcc.conf --pitch-config conf/pitch.conf --nj 40 --cmd "$train_cmd" \
@@ -203,14 +203,14 @@ if [ $stage -eq 3 ]; then
 fi
 
 # concatenate the target emotion as the 34th feature for each of our training examples
-if [ $stage -eq 4 ]; then
+if [ $stage -le 4 ]; then
 	echo "STAGE 4 START: concatenating target emotion as 34th feature"
 
 	expanded_feature_dir=${BASE_DIR}/mfcc_and_target
 	rm -rf $expanded_feature_dir
 	mkdir -p $expanded_feature_dir
 
-	expand_mfccs_and_pitch_features_with_target_emotion.py ${BASE_DIR}/mfcc $expanded_feature_dir
+	nnet-emotion/converter/training/expand_mfccs_and_pitch_features_with_target_emotion.py ${BASE_DIR}/mfcc $expanded_feature_dir
 
 	cat ${BASE_DIR}/mfcc_and_target/*scp > $DATA_OUTPUT_DIR/feats.scp
 
@@ -218,7 +218,7 @@ if [ $stage -eq 4 ]; then
 fi
 
 # filter out utterances that are too short
-if [ $stage -eq 5 ]; then
+if [ $stage -le 5 ]; then
 	echo "STAGE 5 START: filtering out utterances that are too short"
 
 	mv $DATA_OUTPUT_DIR/utt2num_frames $DATA_OUTPUT_DIR/utt2num_frames.bak
@@ -231,7 +231,7 @@ if [ $stage -eq 5 ]; then
 fi
 
 # generate training egs from training featureset
-if [ $stage -eq 6 ]; then
+if [ $stage -le 6 ]; then
 	echo "STAGE 6 START: generating egs for neural net training"
 
 	sid/nnet3/xvector/get_egs.sh --cmd "$train_cmd" \
@@ -249,7 +249,7 @@ if [ $stage -eq 6 ]; then
 fi
 
 # train the autoencoder
-if [ $stage -eq 7 ]; then
+if [ $stage -le 7 ]; then
 	echo "STAGE 7 START: training neural net!"
 
 	mkdir -p $BASE_DIR/nnet
@@ -282,7 +282,7 @@ if [ $stage -eq 7 ]; then
 fi
 
 # copy the autoencoder, remove output layers for converter
-if [ $stage -eq 8 ]; then
+if [ $stage -le 8 ]; then
 	echo "STAGE 8 START: copying model and removing detector"
 
 	mkdir -p $BASE_DIR/models
