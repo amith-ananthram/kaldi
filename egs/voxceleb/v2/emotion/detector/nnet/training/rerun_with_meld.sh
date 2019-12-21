@@ -9,6 +9,7 @@
 set -e
 
 stage=0
+train_stage=-1
 
 . ./utils/parse_options.sh
 
@@ -23,7 +24,9 @@ musan_root=corpora/musan
 # make expected directory structure (if it doesn't already exist)
 if [ $stage -le 0 ]; then
   echo "stage 0: start"
+
   prepare_meld.sh --stage 0
+
   echo "stage 0: end"
 fi
 
@@ -31,7 +34,9 @@ fi
 # just over-write any modified reference model)
 if [ $stage -le 1 ]; then
   echo "stage 1: start"
+
   prepare_meld.sh --stage 1
+
   echo "stage 1: end"
 fi
 
@@ -164,11 +169,45 @@ if [ $stage -le 7 ]; then
   echo "stage 7: end"
 fi
 
-# Stages 8 and 9 (generating egs and training the nnet) are handled in run_meld_xvector.sh
-if [ $stage -ge 8 ]; then
-  if [ $stage -le 9 ]; then
-    local/nnet3/xvector/run_meld_xvector.sh --stage $stage --train-stage -1 \
-      --data ${data_dir}/train_combined_no_sil --nnet-dir $nnet_dir \
-      --egs-dir $nnet_dir/egs --input-model "${MODEL_OUTPUT_DIR}/${MODIFIED_REFERENCE_MODEL}"
-  fi
+if [ $stage -le 8 ]; then
+  echo "stage 8: start"
+
+  sid/nnet3/xvector/get_egs.sh --cmd "$train_cmd" \
+    --nj 8 \
+    --stage 0 \
+    --frames-per-iter 25000000 \
+    --frames-per-iter-diagnostic 100000 \
+    --min-frames-per-chunk 50 \
+    --max-frames-per-chunk 250 \
+    --num-diagnostic-archives 3 \
+    --num-repeats 500 \
+    "$data" $nnet_dir/egs
+
+  echo "stage 8: end"
+fi
+
+dropout_schedule='0,0@0.20,0.1@0.50,0'
+srand=123
+if [ $stage -le 9 ]; then
+  steps/nnet3/train_raw_dnn.py --stage=$train_stage \
+    --cmd="$train_cmd" \
+    --trainer.input-model "${MODEL_OUTPUT_DIR}/${MODIFIED_REFERENCE_MODEL}" \
+    --trainer.optimization.proportional-shrink 10 \
+    --trainer.optimization.momentum=0.5 \
+    --trainer.optimization.num-jobs-initial=1 \
+    --trainer.optimization.num-jobs-final=3 \
+    --trainer.optimization.initial-effective-lrate=0.001 \
+    --trainer.optimization.final-effective-lrate=0.0001 \
+    --trainer.optimization.minibatch-size=64 \
+    --trainer.srand=$srand \
+    --trainer.max-param-change=2 \
+    --trainer.num-epochs=6 \
+    --trainer.dropout-schedule="$dropout_schedule" \
+    --trainer.shuffle-buffer-size=1000 \
+    --egs.frames-per-eg=1 \
+    --egs.dir=$nnet_dir/egs \
+    --cleanup.remove-egs false \
+    --cleanup.preserve-model-interval=10 \
+    --use-gpu=wait \
+    --dir=$nnet_dir  || exit 1;
 fi

@@ -42,6 +42,8 @@ To kick off training of the various neural nets (the base speaker identification
 the variants of the augmented emotion detection model), please run:
 scripts/[TO DO]
 
+NOTE that this requires the following diffs to native Kaldi files: kaldi_diffs/
+
 To kick off scoring of the various neural nets (all the variants of the augment emotion detection 
 model), please run:
 scripts/[TO DO]
