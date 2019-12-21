@@ -12,7 +12,9 @@ set -e
 
 stage=placeholder
 train_stage=-1
+
 discriminator_model="seven_layers_with_sil_250"
+encoder_architecture=placeholder
 
 . ./utils/parse_options.sh
 
@@ -84,34 +86,68 @@ if [ $stage -eq 1 ]; then
 	max_chunk_size=10000
 	min_chunk_size=25
 	mkdir -p $MODEL_OUTPUT_DIR/configs
-	cat <<-EOF > $MODEL_OUTPUT_DIR/configs/modified_nnet.xconfig
-		# please note that it is important to have input layer with the name=input
+	if [ $encoder_architecture -eq 'CNN' ]; then
+		cat <<-EOF > $MODEL_OUTPUT_DIR/configs/modified_nnet.xconfig
+			# please note that it is important to have input layer with the name=input
 
-		# autoencoder layers
-		input dim=${input_dim} name=input
-		relu-batchnorm-layer name=tdnn-3 dim=1024 input=Append(-2,-1,0,1,2)
-		relu-batchnorm-layer name=tdnn-2 dim=512 input=Append(-1,2)
-		relu-batchnorm-layer name=tdnn-1 dim=${latent_dim} input=Append(-3,3)
+			# autoencoder layers
+			input dim=${input_dim} name=input
+			relu-batchnorm-layer name=tdnn-3 dim=1024 input=Append(-2,-1,0,1,2)
+			relu-batchnorm-layer name=tdnn-2 dim=512 input=Append(-1,2)
+			relu-batchnorm-layer name=tdnn-1 dim=${latent_dim} input=Append(-3,3)
 
-		# below are the layers from our pre-trained emotion discriminator
-		# (left unchanged so we reuse their weights -- learning rates are 0 below)
-		relu-batchnorm-layer name=tdnn1 input=Append(-2,-1,0,1,2) dim=512
-		relu-batchnorm-layer name=tdnn2 input=Append(-2,0,2) dim=512
-		relu-batchnorm-layer name=tdnn3 input=Append(-3,0,3) dim=512
-		relu-batchnorm-layer name=tdnn4 dim=512
-		relu-batchnorm-layer name=tdnn5 dim=1500
+			# below are the layers from our pre-trained emotion discriminator
+			# (left unchanged so we reuse their weights -- learning rates are 0 below)
+			relu-batchnorm-layer name=tdnn1 input=Append(-2,-1,0,1,2) dim=512
+			relu-batchnorm-layer name=tdnn2 input=Append(-2,0,2) dim=512
+			relu-batchnorm-layer name=tdnn3 input=Append(-3,0,3) dim=512
+			relu-batchnorm-layer name=tdnn4 dim=512
+			relu-batchnorm-layer name=tdnn5 dim=1500
 
-		# The stats pooling layer. Layers after this are segment-level.
-		# In the config below, the first and last argument (0, and ${max_chunk_size})
-		# means that we pool over an input segment starting at frame 0
-		# and ending at frame ${max_chunk_size} or earlier.  The other arguments (1:1)
-		# mean that no subsampling is performed.
-		stats-layer name=stats config=mean+stddev(0:1:1:${max_chunk_size})
-		relu-batchnorm-layer name=tdnn6 dim=512 input=stats
-		relu-batchnorm-layer name=tdnn7 dim=512
+			# The stats pooling layer. Layers after this are segment-level.
+			# In the config below, the first and last argument (0, and ${max_chunk_size})
+			# means that we pool over an input segment starting at frame 0
+			# and ending at frame ${max_chunk_size} or earlier.  The other arguments (1:1)
+			# mean that no subsampling is performed.
+			stats-layer name=stats config=mean+stddev(0:1:1:${max_chunk_size})
+			relu-batchnorm-layer name=tdnn6 dim=512 input=stats
+			relu-batchnorm-layer name=tdnn7 dim=512
 
-		output-layer name=output include-log-softmax=true dim=${output_dim}
-	EOF
+			output-layer name=output include-log-softmax=true dim=${output_dim}
+		EOF
+	elif [ $encoder_architecture -eq 'FF' ]; then
+		cat <<-EOF > $MODEL_OUTPUT_DIR/configs/modified_nnet.xconfig
+			# please note that it is important to have input layer with the name=input
+
+			# autoencoder layers
+			input dim=${input_dim} name=input
+			relu-batchnorm-layer name=tdnn-3 dim=${latent_dim} 
+			relu-batchnorm-layer name=tdnn-2 dim=${latent_dim} 
+			relu-batchnorm-layer name=tdnn-1 dim=${latent_dim} 
+
+			# below are the layers from our pre-trained emotion discriminator
+			# (left unchanged so we reuse their weights -- learning rates are 0 below)
+			relu-batchnorm-layer name=tdnn1 input=Append(-2,-1,0,1,2) dim=512
+			relu-batchnorm-layer name=tdnn2 input=Append(-2,0,2) dim=512
+			relu-batchnorm-layer name=tdnn3 input=Append(-3,0,3) dim=512
+			relu-batchnorm-layer name=tdnn4 dim=512
+			relu-batchnorm-layer name=tdnn5 dim=1500
+
+			# The stats pooling layer. Layers after this are segment-level.
+			# In the config below, the first and last argument (0, and ${max_chunk_size})
+			# means that we pool over an input segment starting at frame 0
+			# and ending at frame ${max_chunk_size} or earlier.  The other arguments (1:1)
+			# mean that no subsampling is performed.
+			stats-layer name=stats config=mean+stddev(0:1:1:${max_chunk_size})
+			relu-batchnorm-layer name=tdnn6 dim=512 input=stats
+			relu-batchnorm-layer name=tdnn7 dim=512
+
+			output-layer name=output include-log-softmax=true dim=${output_dim}
+		EOF
+	else 
+		echo 'Unsupported encoder architecture: ${encoder_architecture}' 1>&2
+		exit 1
+	fi
 
 	steps/nnet3/xconfig_to_configs.py \
 		--xconfig-file $MODEL_OUTPUT_DIR/configs/modified_nnet.xconfig \
@@ -243,4 +279,20 @@ if [ $stage -eq 7 ]; then
 	    --dir=$BASE_DIR/nnet  || exit 1;
 
 	echo "STAGE 7 END: training neural net!"
+fi
+
+# copy the autoencoder, remove output layers for converter
+if [ $stage -eq 8 ]; then
+	echo "STAGE 8 START: copying model and removing detector"
+
+	mkdir -p $BASE_DIR/models
+	cp $BASE_DIR/nnet/final.raw $BASE_DIR/models/${encoder_architecture}_full.raw
+
+	nnet3-copy \
+		--nnet-config="$MODEL_OUTPUT_DIR/extract.config" \
+		"${encoder_architecture}_full.raw" \
+		"${encoder_architecture}_converter.raw"
+	nnet3-info "${encoder_architecture}_converter.raw"
+
+	echo "STAGE 8 END: copying model and removing detector"
 fi
