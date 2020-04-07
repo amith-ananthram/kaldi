@@ -6,7 +6,7 @@ set -e
 model_path=placeholder
 num_layers=placeholder
 corpus_dir=placeholder
-output_dir=placeholder
+output_base_dir=placeholder
 
 . ./utils/parse_options.sh
 
@@ -20,18 +20,18 @@ do
 	
 	# first we configure the extraction (which layer) and then copy the source
 	# model into a temporary working directory (to avoid corrupting our data)
-	workdir="temp"
-	mkdir $workdir
-	echo "$min_chunk_size" > $workdir/min_chunk_size
-	echo "$max_chunk_size" > $workdir/max_chunk_size
-	echo "output-node name=output input=tdnn${layer}.affine" > $workdir/extract.config
-	cp $model_path temp/final.raw
+	work_dir="temp"
+	mkdir $work_dir
+	echo "$min_chunk_size" > $work_dir/min_chunk_size
+	echo "$max_chunk_size" > $work_dir/max_chunk_size
+	echo "output-node name=output input=tdnn${layer}.affine" > $work_dir/extract.config
+	cp $model_path $work_dir/final.raw
 
-	outdir="$output_dir/$layer"
-	mkdir $outdir
+	out_dir="$output_base_dir/$layer"
+	mkdir $out_dir
 	sid/nnet3/xvector/extract_xvectors.sh --cmd "$train_cmd --mem 4G" --nj 40 \
-		$work_dir $corpus_dir $outdir
+		$work_dir $corpus_dir $out_dir
 
 	# clean up (so we hard fail if we run into any issues on the next iteration)
-	rm -rf temp
+	rm -rf $work_dir
 done
