@@ -3,6 +3,7 @@
 
 set -e
 
+nj=placeholder
 model_path=placeholder
 num_layers=placeholder
 corpus_dir=placeholder
@@ -29,7 +30,7 @@ do
 
 	out_dir="$output_base_dir/$layer"
 	mkdir $out_dir
-	sid/nnet3/xvector/extract_xvectors.sh --cmd "$train_cmd --mem 4G" --nj 40 \
+	sid/nnet3/xvector/extract_xvectors.sh --cmd "$train_cmd --mem 4G" --nj $nj \
 		$work_dir $corpus_dir $out_dir
 
 	# clean up (so we hard fail if we run into any issues on the next iteration)
