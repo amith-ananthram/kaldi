@@ -10,9 +10,18 @@ import os.path
 UTT2SPK_FILE = 'utt2spk'
 WAV_FILE = 'wav.scp'
 
+COLLAPSED_IEMOCAP_EMOTIONS = {
+	'0': 'anger/disgust',
+	'1': 'fear/surprise',
+	'2': 'happiness',
+	'3': 'neutral',
+	'4': 'sadness'
+}
+
 class UtteranceDetails:
 	def __init__(self, session, mocap_source, dialogue_type, 
-		dialogue_number, utterance_number, utterance, speaker, emotion_label):
+		dialogue_number, utterance_number, utterance, speaker,
+		src_file, emotion_label):
 		self.session = session
 		self.mocap_source = mocap_source
 		self.dialogue_type = dialogue_type
@@ -20,21 +29,29 @@ class UtteranceDetails:
 		self.utterance_number = utterance_number
 		self.utterance = utterance
 		self.speaker = speaker
+		self.src_file = src_file
 		self.emotion_label = emotion_label
 
 	def __repr__(self):
 		return "%s: %s" % (self.get_filename(), self.utterance)
 
-	def get_id(self):
+	# old id format (might be required for nnet scoring)
+	def get_old_id(self):
 		return "%s_Ses%s%s_%s%s_%s%s" % (
 			self.emotion_label,
-                        self.session,
+			self.session,
 			self.mocap_source,
 			self.get_dialogue_type_shortname(),
 			self.dialogue_number,
 			self.speaker,
 			self.utterance_number
 		)
+
+	# new id format (required for LDA / PLDA training)
+	def get_id(self):
+		return "%s-%s-%s%s-%s-%s-%s-%s" % (
+			self.emotion_label, self.src_file, self.session, self.mocap_source, 
+			self.dialogue_type, self.dialogue_number, self.utterance_number, self.speaker)
 
 	def get_dialogue_type_shortname(self):
 		if self.dialogue_type == "improvisation":
@@ -51,10 +68,18 @@ class UtteranceDetails:
 			self.mocap_source,
 			self.get_dialogue_type_shortname(),
 			self.dialogue_number,
-                        self.get_id()[2:]
+			self.get_old_id()[2:]
 		)
 
 def get_utterances(input_csv):
+	src_file = None
+	if input_csv.find("train") != -1:
+		src_file = "train"
+	elif input_csv.find("dev") != -1:
+		src_file = "dev"
+	else:
+		src_file = "test"
+
 	utterances = []
 	with open(input_csv) as f:
 		csv_reader = csv.reader(f, delimiter=',')
@@ -84,7 +109,7 @@ def get_utterances(input_csv):
 				utterance_number = row[5]
 				utterance = row[8]
 				speaker = row[9]
-				emotion_label = row[11]
+				emotion_label = COLLAPSED_IEMOCAP_EMOTIONS[row[11]]
 				utterances.append(
 					UtteranceDetails(
 						session,
@@ -94,7 +119,8 @@ def get_utterances(input_csv):
 						utterance_number,
 						utterance,
 						speaker,
-						emotion_label,
+						src_file,
+						emotion_label
 					)
 				)
 				line_count += 1
@@ -113,8 +139,8 @@ def generate_wavscp(utterances, input_data_dir, output_data_dir):
 	with open(os.path.join(output_data_dir, WAV_FILE), 'w') as f:
 		for utterance in sorted(utterances, key=lambda utterance: utterance.get_id()):
 			wav_file_path = os.path.join(input_data_dir, utterance.get_filename())
-                        if not os.path.exists(wav_file_path):
-                            raise Exception('Missing file: %s' % (utterance.get_id()))
+			if not os.path.exists(wav_file_path):
+				raise Exception('Missing file: %s' % (utterance.get_id()))
 			wav_creation_cmd = "ffmpeg -v 8 -i %s -f wav -ar 16000 -acodec pcm_s16le -|" % (wav_file_path)
 			f.write("%s %s\n" % (utterance.get_id(), wav_creation_cmd))
 
