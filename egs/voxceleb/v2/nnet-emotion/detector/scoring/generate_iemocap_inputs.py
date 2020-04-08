@@ -21,7 +21,7 @@ COLLAPSED_IEMOCAP_EMOTIONS = {
 class UtteranceDetails:
 	def __init__(self, session, mocap_source, dialogue_type, 
 		dialogue_number, utterance_number, utterance, speaker,
-		src_file, emotion_label):
+		src_file, orig_emotion, mapped_emotion):
 		self.session = session
 		self.mocap_source = mocap_source
 		self.dialogue_type = dialogue_type
@@ -30,7 +30,8 @@ class UtteranceDetails:
 		self.utterance = utterance
 		self.speaker = speaker
 		self.src_file = src_file
-		self.emotion_label = emotion_label
+		self.orig_emotion = orig_emotion
+		self.mapped_emotion = mapped_emotion
 
 	def __repr__(self):
 		return "%s: %s" % (self.get_filename(), self.utterance)
@@ -38,7 +39,7 @@ class UtteranceDetails:
 	# old id format (might be required for nnet scoring)
 	def get_old_id(self):
 		return "%s_Ses%s%s_%s%s_%s%s" % (
-			self.emotion_label,
+			self.orig_emotion,
 			self.session,
 			self.mocap_source,
 			self.get_dialogue_type_shortname(),
@@ -50,7 +51,7 @@ class UtteranceDetails:
 	# new id format (required for LDA / PLDA training)
 	def get_id(self):
 		return "%s-%s-%s%s-%s-%s-%s-%s" % (
-			self.emotion_label, self.src_file, self.session, self.mocap_source, 
+			self.mapped_emotion, self.src_file, self.session, self.mocap_source, 
 			self.dialogue_type, self.dialogue_number, self.utterance_number, self.speaker)
 
 	def get_dialogue_type_shortname(self):
@@ -109,7 +110,8 @@ def get_utterances(input_csv):
 				utterance_number = row[5]
 				utterance = row[8]
 				speaker = row[9]
-				emotion_label = COLLAPSED_IEMOCAP_EMOTIONS[row[11]]
+				orig_emotion = row[11]
+				mapped_emotion = COLLAPSED_IEMOCAP_EMOTIONS[orig_emotion]
 				utterances.append(
 					UtteranceDetails(
 						session,
@@ -120,7 +122,8 @@ def get_utterances(input_csv):
 						utterance,
 						speaker,
 						src_file,
-						emotion_label
+						orig_emotion,
+						mapped_emotion
 					)
 				)
 				line_count += 1
@@ -128,12 +131,11 @@ def get_utterances(input_csv):
 
 # note that in the utt2spk file we generate we map each 
 # utterance to a numerical encoding of the utterance's 
-# emotion label according to MELD (so that we can lever 
-# the existing vox2/run.sh with minimal modification)
+# emotion label according to IEMOCAP (doesn't matter thaaat much)
 def generate_utt2spk(utterances, output_data_dir):
 	with open(os.path.join(output_data_dir, UTT2SPK_FILE), 'w') as f:
 		for utterance in sorted(utterances, key=lambda utterance: utterance.get_id()):
-			f.write("%s %s\n" % (utterance.get_id(), utterance.emotion_label))
+			f.write("%s %s\n" % (utterance.get_id(), utterance.orig_emotion))
 
 def generate_wavscp(utterances, input_data_dir, output_data_dir):
 	with open(os.path.join(output_data_dir, WAV_FILE), 'w') as f:
