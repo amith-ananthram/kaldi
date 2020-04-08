@@ -140,7 +140,7 @@ def generate_wavscp(utterances, input_data_dir, output_data_dir):
 		for utterance in sorted(utterances, key=lambda utterance: utterance.get_id()):
 			wav_file_path = os.path.join(input_data_dir, utterance.get_filename())
 			if not os.path.exists(wav_file_path):
-				raise Exception('Missing file: %s' % (utterance.get_id()))
+				raise Exception('Missing file: %s' % (utterance.get_filename()))
 			wav_creation_cmd = "ffmpeg -v 8 -i %s -f wav -ar 16000 -acodec pcm_s16le -|" % (wav_file_path)
 			f.write("%s %s\n" % (utterance.get_id(), wav_creation_cmd))
 
