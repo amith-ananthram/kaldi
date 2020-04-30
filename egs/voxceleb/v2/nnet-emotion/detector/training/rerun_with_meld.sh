@@ -30,7 +30,7 @@ nnet_dir="$root/exp/xvector_nnet_1a"
 data_dir="${DATA_OUTPUT_DIR}"
 
 # make expected directory structure (if it doesn't already exist)
-if [ $stage -le 0 ]; then
+if [ $stage -eq 0 ]; then
   echo "stage 0 (making directory structure): start"
 
   nnet-emotion/detector/training/prepare_meld.sh --stage 0
@@ -40,7 +40,7 @@ fi
 
 # prepare reference model (safe to rerun; it will 
 # just over-write any modified reference model)
-if [ $stage -le 1 ]; then
+if [ $stage -eq 1 ]; then
   echo "stage 1 (copying and configuring reference model): start"
 
   nnet-emotion/detector/training/prepare_meld.sh --stage 1 --num_layers $num_layers --first_six_lr $first_six_lr
@@ -63,13 +63,13 @@ else
 
   # prepare input data: utt2spk, wav.scp (safe to rerun; it will
   # just over-write any existing generated input files)
-  if [ $stage -le 2 ]; then
+  if [ $stage -eq 2 ]; then
     echo "stage 2 (preparing MELD for Kaldi -- utt2spk, spk2utt): start"
     nnet-emotion/detector/training/prepare_meld.sh --stage 2
     echo "stage 2 (preparing MELD for Kaldi -- utt2spk, spk2utt): end"
   fi
 
-  if [ $stage -le 3 ]; then
+  if [ $stage -eq 3 ]; then
     echo "stage 3 (extracting MFCCs and VAD): start"
     # Make MFCCs and compute the energy-based VAD for each dataset
     steps/make_mfcc_pitch.sh --write-utt2num-frames true --mfcc-config conf/mfcc.conf --pitch-config conf/pitch.conf --nj 40 --cmd "$train_cmd" \
@@ -84,7 +84,7 @@ else
   if [ $include_noise ]; then
     # In this section, we augment the MELD data with reverberation,
     # noise, music, and babble, and combine it with the clean data.
-    if [ $stage -le 4 ]; then
+    if [ $stage -eq 4 ]; then
       echo "stage 4 (augmenting with noise): start"
       frame_shift=0.01
       awk -v frame_shift=$frame_shift '{print $1, $2*frame_shift;}' ${DATA_OUTPUT_COMBINED_DIR}/utt2num_frames > ${DATA_OUTPUT_COMBINED_DIR}/reco2dur
@@ -132,7 +132,7 @@ else
       echo "stage 4 (augmenting with noise): end"
     fi
 
-    if [ $stage -le 5 ]; then
+    if [ $stage -eq 5 ]; then
       echo "stage 5 (sampling and extracting MFCCs for noise): start"
       # Take a random subset of the augmentations
       utils/subset_data_dir.sh ${data_dir}/train_aug 10000 ${data_dir}/train_aug_1m
@@ -154,7 +154,7 @@ fi
 
 
 # Now we prepare the features to generate examples for xvector training.
-if [ $stage -le 6 ]; then
+if [ $stage -eq 6 ]; then
   echo "stage 6 (removing silence if $remove_sil=True): start"
   # This script applies CMVN and removes nonspeech frames.  Note that this is somewhat
   # wasteful, as it roughly doubles the amount of training data on disk.  After
@@ -172,7 +172,7 @@ fi
 
 # ./run.sh does a bunch of filtering of utterances by speakers
 # that are too infrequent -- we skip that here speaker=emotion label 
-if [ $stage -le 7 ]; then
+if [ $stage -eq 7 ]; then
   echo "stage 7 (filtering utterances that are < $min_num_frames): start"
   # Now, we need to remove features that are too short after removing silence
   # frames.  We want atleast $min_num_frames per utterance. (note this is smaller than in v2/run.sh)
@@ -187,7 +187,7 @@ if [ $stage -le 7 ]; then
 fi
 
 # safe to rerun, cleans up the directory
-if [ $stage -le 8 ]; then
+if [ $stage -eq 8 ]; then
   echo "stage 8 (getting training examples): start"
 
   rm -rf $nnet_dir/egs
@@ -207,7 +207,7 @@ fi
 
 dropout_schedule='0,0@0.20,0.1@0.50,0'
 srand=123
-if [ $stage -le 9 ]; then
+if [ $stage -eq 9 ]; then
   steps/nnet3/train_raw_dnn.py --stage=$train_stage \
     --cmd="$train_cmd" \
     --trainer.input-model "${MODEL_OUTPUT_DIR}/${MODIFIED_REFERENCE_MODEL}" \
