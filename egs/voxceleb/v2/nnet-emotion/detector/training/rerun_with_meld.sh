@@ -48,10 +48,10 @@ if [ $stage -eq 1 ]; then
   echo "stage 1 (copying and configuring reference model): end"
 fi
 
-if [ $reuse_mfccs ]; then
+if $reuse_mfccs; then
   echo "reusing already extracted MFCCs..."
   rm -rf ${data_dir}/train_combined
-  if [ $include_noise ]; then
+  if $include_noise; then
     # Combine the clean and augmented MELD list.  This is now roughly double the size of the original clean list.
     utils/combine_data.sh ${data_dir}/train_combined ${data_dir}/train_aug_1m ${DATA_OUTPUT_COMBINED_DIR}
   else 
@@ -81,7 +81,7 @@ else
     echo "stage 3 (extracting MFCCs and VAD): end"
   fi
 
-  if [ $include_noise ]; then
+  if $include_noise; then
     # In this section, we augment the MELD data with reverberation,
     # noise, music, and babble, and combine it with the clean data.
     if [ $stage -eq 4 ]; then
@@ -160,7 +160,7 @@ if [ $stage -eq 6 ]; then
   # wasteful, as it roughly doubles the amount of training data on disk.  After
   # creating training examples, this can be removed.
   rm -rf ${data_dir}/train_combined_no_sil
-  if [ $remove_sil ]; then
+  if $remove_sil; then
   	local/nnet3/xvector/prepare_feats_for_egs.sh --nj 40 --cmd "$train_cmd" \
   		${data_dir}/train_combined ${data_dir}/train_combined_no_sil ${root}/exp/train_combined_no_sil
   	utils/fix_data_dir.sh ${data_dir}/train_combined_no_sil
