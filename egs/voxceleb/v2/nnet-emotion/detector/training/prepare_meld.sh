@@ -18,6 +18,11 @@ NUM_INPUT_DIMENSIONS=33
 NUM_TARGET_DIMENSIONS=5
 
 stage=0
+# these command line options allow specifying more 
+# / fewer layers in the fine-tuned model and different 
+# learning rates for the original layers
+num_layers=7
+first_six_lr=0
 
 . ./utils/parse_options.sh
 
@@ -47,7 +52,7 @@ if [ $stage -eq 1 ]; then
 	# in MODEL_OUTPUT_DIR (so we have a fresh start)
 	rm -rf "$MODEL_OUTPUT_DIR/*"
 
-	# first, we generate a new config for our modified
+	# then, we generate a new config for our modified
 	# model which modifies the output dimensionality of
 	# the final layer (from # of speakers in vox2 to # of emotions)
 	
@@ -59,6 +64,16 @@ if [ $stage -eq 1 ]; then
 	#
 	max_chunk_size=10000
 	min_chunk_size=25
+
+	if [ $num_layers -eq 7 ]; then 
+		additional_layers=''
+	elif [ $num_layers -eq 8 ]; then
+		additional_layers='relu-batchnorm-layer name=tdnn8 dim=512'
+	else
+		echo "Unsupported num_layers=$num_layers" 1>&2
+		exit 1
+	fi
+
 	mkdir -p $MODEL_OUTPUT_DIR/configs
 	cat <<-EOF > $MODEL_OUTPUT_DIR/configs/modified_nnet.xconfig
 		# please note that it is important to have input layer with the name=input
@@ -81,10 +96,8 @@ if [ $stage -eq 1 ]; then
 		# This is where we usually extract the embedding (aka xvector) from.
 		relu-batchnorm-layer name=tdnn6 dim=512 input=stats
 
-		# This is where another layer the embedding could be extracted
-		# from, but usually the previous one works better.
 		relu-batchnorm-layer name=tdnn7 dim=512
-		# relu-batchnorm-layer name=tdnn8 dim=512
+		${additional_layers}
 		output-layer name=output include-log-softmax=true dim=${num_targets}
 	EOF
 
@@ -93,8 +106,6 @@ if [ $stage -eq 1 ]; then
 		--config-dir $MODEL_OUTPUT_DIR/configs/
 	cp $MODEL_OUTPUT_DIR/configs/final.config $MODEL_OUTPUT_DIR/modified_nnet.config
 
-	# this is for x-vector extraction (in case we need it)
-	echo "output-node name=output input=tdnn6.affine" > $MODEL_OUTPUT_DIR/extract.config
 	echo "$max_chunk_size" > $MODEL_OUTPUT_DIR/max_chunk_size
 	echo "$min_chunk_size" > $MODEL_OUTPUT_DIR/min_chunk_size
 
@@ -102,19 +113,24 @@ if [ $stage -eq 1 ]; then
 	# END: copied with minimal modification from run_xvector.sh
 	#
 
+	if [ $first_six_lr -lt 0 ]; then 
+		echo "Unsupported first_six_lr=$first_six_lr" 1>&2
+		exit 1
+	fi
+
 	# now, with our updated target config in hand, we copy our
 	# reference model, modifying its final output layer and setting
-	# the learning rates for the first 6 layers to 0
+	# the learning rates for the first 6 layers to $first_six_lr
 	nnet3-copy \
 		--nnet-config="$MODEL_OUTPUT_DIR/modified_nnet.config" \
-		--edits="set-learning-rate name=input* learning-rate=0; \
-			set-learning-rate name=stats* learning-rate=0; \
-			set-learning-rate name=tdnn1* learning-rate=0; \
-			set-learning-rate name=tdnn2* learning-rate=0; \
-			set-learning-rate name=tdnn3* learning-rate=0; \
-			set-learning-rate name=tdnn4* learning-rate=0; \
-			set-learning-rate name=tdnn5* learning-rate=0; \
-			set-learning-rate name=tdnn6* learning-rate=0;" \
+		--edits="set-learning-rate name=input* learning-rate=$first_six_lr; \
+			set-learning-rate name=stats* learning-rate=$first_six_lr; \
+			set-learning-rate name=tdnn1* learning-rate=$first_six_lr; \
+			set-learning-rate name=tdnn2* learning-rate=$first_six_lr; \
+			set-learning-rate name=tdnn3* learning-rate=$first_six_lr; \
+			set-learning-rate name=tdnn4* learning-rate=$first_six_lr; \
+			set-learning-rate name=tdnn5* learning-rate=$first_six_lr; \
+			set-learning-rate name=tdnn6* learning-rate=$first_six_lr;" \
 		"$MODEL_INPUT_DIR/$BASE_REFERENCE_MODEL" \
 		"$MODEL_OUTPUT_DIR/$MODIFIED_REFERENCE_MODEL" || exit 1;
 fi
