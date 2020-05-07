@@ -2,33 +2,40 @@
 
 # author: aa4461
 
+import os
 import sys
+import numpy as np
 
 import scoring_utils as su
+from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
 
 def main():
-	experiment_name = sys.argv[1]
-	utt2labels_filepath = sys.argv[2]
-	predictions_ark_filepath = sys.argv[3]
-	output_path = sys.argv[4]
+	utt2labels_filepath = sys.argv[1]
+	predictions_ark_filepath = sys.argv[2]
+	output_path = sys.argv[3]
 
 	utt2labels = su.parse_utt2labels(utt2labels_filepath)
 	utt2predictions = su.parse_predictions_ark(predictions_ark_filepath)
 
-	scores_using_most_frequent_emotion = su.score(
-		'%s_most_freq' % (experiment_name), utt2labels, utt2predictions, su.get_most_frequent_emotion)
-	scores_using_most_likely_emotion = su.score(
-		'%s_most_likely' % (experiment_name), utt2labels, utt2predictions, su.get_most_likely_emotion)
-	scores_using_longest_streak_emotion = su.score(
-		'%s_longest_streak' % (experiment_name), utt2labels, utt2predictions, su.get_longest_streak_emotion)
+	y_true = []
+	y_pred = []
+	for utt in (utt2labels.keys() ^ utt2predictions.keys()):
+		y_true.append(utt2labels[utt])
+		y_pred.append(np.argmax(utt2predictions[utt]))
 
-	scores_using_most_frequent_emotion.print_results()
-	scores_using_most_likely_emotion.print_results()
-	scores_using_longest_streak_emotion.print_results()
+	accuracy = accuracy_score(y_true, y_pred)
+	micro_f1 = f1_score(y_true, y_pred, average='micro')
+	macro_f1 = f1_score(y_true, y_pred, average='macro')
+	confusion_matrix = confusion_matrix(y_true, y_pred)
 
-	scores_using_most_likely_emotion.save_results(output_path)
-	scores_using_most_frequent_emotion.save_results(output_path)
-	scores_using_longest_streak_emotion.save_results(output_path)
+	with open(output_path, 'w') as f:
+		f.write("Accuracy: %s\n" % (accuracy))
+		f.write("Micro-F1: %s\n" % (micro_f1))
+		f.write("Macro-F1: %s\n" % (macro_f1))
+
+		f.write("Confusion matrix:\n")
+		for row in confusion_matrix:
+			f.write(",".join(row) + "\n")
 
 if __name__ == "__main__":
 	main()
