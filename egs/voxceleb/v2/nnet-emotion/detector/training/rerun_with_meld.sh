@@ -59,8 +59,6 @@ if $reuse_mfccs; then
     utils/combine_data.sh ${data_dir}/train_combined ${DATA_OUTPUT_COMBINED_DIR}
   fi
 else 
-  rm -rf $mfccdir
-
   # prepare input data: utt2spk, wav.scp (safe to rerun; it will
   # just over-write any existing generated input files)
   if [ $stage -eq 2 ]; then
@@ -71,6 +69,7 @@ else
 
   if [ $stage -eq 3 ]; then
     echo "stage 3 (extracting MFCCs and VAD): start"
+    rm -rf $mfccdir
     # Make MFCCs and compute the energy-based VAD for each dataset
     steps/make_mfcc_pitch.sh --write-utt2num-frames true --mfcc-config conf/mfcc.conf --pitch-config conf/pitch.conf --nj 40 --cmd "$train_cmd" \
         ${DATA_OUTPUT_COMBINED_DIR} ${root}/exp/make_mfcc $mfccdir
@@ -196,7 +195,7 @@ if [ $stage -eq 8 ]; then
     --stage 0 \
     --frames-per-iter 25000000 \
     --frames-per-iter-diagnostic 100000 \
-    --min-frames-per-chunk 50 \
+    --min-frames-per-chunk $min_num_frames \
     --max-frames-per-chunk $min_num_frames \
     --num-diagnostic-archives 3 \
     --num-repeats 500 \
@@ -214,7 +213,7 @@ if [ $stage -eq 9 ]; then
     --trainer.optimization.proportional-shrink 10 \
     --trainer.optimization.momentum=0.5 \
     --trainer.optimization.num-jobs-initial=1 \
-    --trainer.optimization.num-jobs-final=3 \
+    --trainer.optimization.num-jobs-final=1 \
     --trainer.optimization.initial-effective-lrate=0.001 \
     --trainer.optimization.final-effective-lrate=0.0001 \
     --trainer.optimization.minibatch-size=64 \

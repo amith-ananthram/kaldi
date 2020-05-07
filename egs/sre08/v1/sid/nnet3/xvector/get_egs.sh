@@ -162,7 +162,7 @@ if [ $stage -le 2 ]; then
   $cmd $dir/log/allocate_examples_train_subset.log \
     sid/nnet3/xvector/allocate_egs.py \
       --prefix train_subset \
-      --num-repeats=1 \
+      --num-repeats=50 \
       --min-frames-per-chunk=$min_frames_per_chunk \
       --max-frames-per-chunk=$max_frames_per_chunk \
       --randomize-chunk-length false \
@@ -175,7 +175,7 @@ if [ $stage -le 2 ]; then
   $cmd $dir/log/allocate_examples_valid.log \
     sid/nnet3/xvector/allocate_egs.py \
       --prefix valid \
-      --num-repeats=1 \
+      --num-repeats=50 \
       --min-frames-per-chunk=$min_frames_per_chunk \
       --max-frames-per-chunk=$max_frames_per_chunk \
       --randomize-chunk-length false \

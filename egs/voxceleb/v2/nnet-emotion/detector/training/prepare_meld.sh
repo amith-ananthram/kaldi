@@ -40,7 +40,7 @@ if [ $stage -eq 0 ]; then
 	do
 		if [ ! -d $dir ]; then
 			mkdir -p $dir
-			sudo chmod -R 775 $dir
+			chmod -R 775 $dir
 		fi
 	done
 fi

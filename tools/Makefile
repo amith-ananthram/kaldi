@@ -1,6 +1,6 @@
 # SHELL += -x
 
-CXX ?= g++
+CXX ?= g++-7.3.0
 CC ?= gcc        # used for sph2pipe
 # CXX = clang++  # Uncomment these lines...
 # CC = clang     # ...to build with Clang.
