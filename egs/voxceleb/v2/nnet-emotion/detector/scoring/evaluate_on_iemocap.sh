@@ -46,15 +46,12 @@ fi
 if [ $stage -eq 2 ]; then
 	echo "Stage 2: generating predictions for specified model"
 	mkdir -p "${model_path}/predictions"
-	nnet3-xvector-compute-batched --use-gpu=yes \
-		"${model_path}/final.raw" \ 
-		scp:${features_path}/all_iemocap/feats.scp \
-		ark:${model_path}/predictions/iemocap_predictions.ark
+	nnet3-xvector-compute-batched --use-gpu=yes "${model_path}/final.raw" scp:${features_path}/all_iemocap/feats.scp ark:${model_path}/predictions/iemocap_predictions.ark
 	echo "Stage 2: end"
 fi
 
 # score nnet predictions against actual labels
-if [ $stage -eq 3 ]; 
+if [ $stage -eq 3 ]; then 
 	echo "Stage 3: generating scores for specified model"
 	mkdir -p "${model_path}/scores"
 	nnet-emotion/detector/scoring/score_emotion_prediction_results.py \

@@ -1,10 +1,10 @@
 # author: aa4461
 
 import os.path
-import kaldi_io
 import numpy as np
 import pandas as pd
 from functools import reduce
+from kaldiio import ReadHelper
 
 class ScoringResults:
 	def __init__(self, name):
@@ -54,10 +54,11 @@ def parse_utt2labels(filepath):
 
 def parse_predictions_ark(filepath):
 	utt2predictions = {}
-	for utterance_id, predictions in kaldi_io.read_mat_ark(filepath):
-		if utterance_id in utt2predictions:
-			raise Exception('%s duped in %s' % (utterance_id, filepath))
-		utt2predictions[utterance_id] = predictions
+	with ReadHelper('ark:%s' % (filepath)) as reader:
+		for utterance_id, predictions in reader:
+			if utterance_id in utt2predictions:
+				raise Exception('%s duped in %s' % (utterance_id, filepath))
+			utt2predictions[utterance_id] = predictions
 	return utt2predictions
 
 def get_most_frequent_emotion(predictions_by_frame):

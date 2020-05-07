@@ -7,7 +7,8 @@ import sys
 import numpy as np
 
 import scoring_utils as su
-from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
+from sklearn.metrics import accuracy_score, f1_score
+from sklearn.metrics import confusion_matrix as get_confusion_matrix
 
 def main():
 	utt2labels_filepath = sys.argv[1]
@@ -19,14 +20,14 @@ def main():
 
 	y_true = []
 	y_pred = []
-	for utt in (utt2labels.keys() ^ utt2predictions.keys()):
+	for utt in (utt2labels.keys() | utt2predictions.keys()):
 		y_true.append(utt2labels[utt])
 		y_pred.append(np.argmax(utt2predictions[utt]))
 
 	accuracy = accuracy_score(y_true, y_pred)
 	micro_f1 = f1_score(y_true, y_pred, average='micro')
 	macro_f1 = f1_score(y_true, y_pred, average='macro')
-	confusion_matrix = confusion_matrix(y_true, y_pred)
+	confusion_matrix = get_confusion_matrix(y_true, y_pred)
 
 	with open(output_path, 'w') as f:
 		f.write("Accuracy: %s\n" % (accuracy))
@@ -35,7 +36,7 @@ def main():
 
 		f.write("Confusion matrix:\n")
 		for row in confusion_matrix:
-			f.write(",".join(row) + "\n")
+			f.write(",".join(map(str, row)) + "\n")
 
 if __name__ == "__main__":
 	main()
