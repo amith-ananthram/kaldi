@@ -204,7 +204,7 @@ if [ $stage -eq 8 ]; then
   echo "stage 8 (getting training examples): end"
 fi
 
-dropout_schedule='0,0@0.20,0.1@0.50,0'
+dropout_schedule='0,0.8@0.20,0.8@0.50,0.8'
 srand=123
 if [ $stage -eq 9 ]; then
   steps/nnet3/train_raw_dnn.py --stage=$train_stage \

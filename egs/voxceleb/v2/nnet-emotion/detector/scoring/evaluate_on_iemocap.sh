@@ -10,6 +10,8 @@ model_path=placeholder
 corpus_path=placeholder
 features_path=placeholder
 
+chunk_size=placeholder
+
 . ./utils/parse_options.sh
 
 CSVS_DIR="${corpus_path}/csvs"
@@ -46,7 +48,7 @@ fi
 if [ $stage -eq 2 ]; then
 	echo "Stage 2: generating predictions for specified model"
 	mkdir -p "${model_path}/predictions"
-	nnet3-xvector-compute-batched --use-gpu=yes "${model_path}/final.raw" scp:${features_path}/all_iemocap/feats.scp ark:${model_path}/predictions/iemocap_predictions.ark
+	nnet3-xvector-compute-batched --use-gpu=yes --chunk-size=$chunk_size "${model_path}/final.raw" scp:${features_path}/all_iemocap/feats.scp ark:${model_path}/predictions/iemocap_predictions.ark
 	echo "Stage 2: end"
 fi
 
