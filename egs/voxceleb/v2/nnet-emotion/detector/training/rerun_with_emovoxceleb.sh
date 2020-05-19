@@ -5,7 +5,7 @@
 . ./cmd.sh
 . ./path.sh
 . nnet-emotion/detector/training/finetune_settings.sh
-. nnet-emotion/detector/training/meld_settings.sh
+. nnet-emotion/detector/training/emovoxceleb_settings.sh
 
 set -e
 
@@ -34,7 +34,7 @@ data_dir="${DATA_OUTPUT_DIR}"
 if [ $stage -eq 0 ]; then
   echo "stage 0 (making directory structure): start"
 
-  nnet-emotion/detector/training/prepare_meld.sh --stage 0
+  nnet-emotion/detector/training/prepare_emovoxceleb.sh --stage 0
 
   echo "stage 0 (making directory structure): end"
 fi
@@ -44,7 +44,7 @@ fi
 if [ $stage -eq 1 ]; then
   echo "stage 1 (copying and configuring reference model): start"
 
-  nnet-emotion/detector/training/prepare_meld.sh --stage 1 --num_layers $num_layers --first_six_lr $first_six_lr
+  nnet-emotion/detector/training/prepare_emovoxceleb.sh --stage 1 --num_layers $num_layers --first_six_lr $first_six_lr
 
   echo "stage 1 (copying and configuring reference model): end"
 fi
@@ -53,19 +53,19 @@ if $reuse_mfccs; then
   echo "reusing already extracted MFCCs..."
   rm -rf ${data_dir}/train_combined
   if $include_noise; then
-    # Combine the clean and augmented MELD list.  This is now roughly double the size of the original clean list.
+    # Combine the clean and augmented EmoVoxCeleb list.  This is now roughly double the size of the original clean list.
     utils/combine_data.sh ${data_dir}/train_combined ${data_dir}/train_aug_1m ${DATA_OUTPUT_COMBINED_DIR}
   else 
-    # A little hacky but works!  Just moving the un-augmented MELD where the rest of the code expects it.
+    # A little hacky but works!  Just moving the un-augmented EmoVoxCeleb where the rest of the code expects it.
     utils/combine_data.sh ${data_dir}/train_combined ${DATA_OUTPUT_COMBINED_DIR}
   fi
 else 
   # prepare input data: utt2spk, wav.scp (safe to rerun; it will
   # just over-write any existing generated input files)
   if [ $stage -eq 2 ]; then
-    echo "stage 2 (preparing MELD for Kaldi -- utt2spk, spk2utt): start"
-    nnet-emotion/detector/training/prepare_meld.sh --stage 2
-    echo "stage 2 (preparing MELD for Kaldi -- utt2spk, spk2utt): end"
+    echo "stage 2 (preparing EmoVoxCeleb for Kaldi -- utt2spk, spk2utt): start"
+    nnet-emotion/detector/training/prepare_emovoxceleb.sh --stage 2
+    echo "stage 2 (preparing EmoVoxCeleb for Kaldi -- utt2spk, spk2utt): end"
   fi
 
   if [ $stage -eq 3 ]; then
@@ -82,7 +82,7 @@ else
   fi
 
   if $include_noise; then
-    # In this section, we augment the MELD data with reverberation,
+    # In this section, we augment the EmoVoxCeleb data with reverberation,
     # noise, music, and babble, and combine it with the clean data.
     if [ $stage -eq 4 ]; then
       echo "stage 4 (augmenting with noise): start"
@@ -94,7 +94,7 @@ else
       rvb_opts+=(--rir-set-parameters "0.5, $NOISE_DIR/simulated_rirs/smallroom/rir_list")
       rvb_opts+=(--rir-set-parameters "0.5, $NOISE_DIR/simulated_rirs/mediumroom/rir_list")
 
-      # Make a reverberated version of the MELD list.  Note that we don't add any
+      # Make a reverberated version of the EmoVoxCeleb list.  Note that we don't add any
       # additive noise here.
       steps/data/reverberate_data_dir.py \
         "${rvb_opts[@]}" \
@@ -144,7 +144,7 @@ else
       steps/make_mfcc_pitch.sh --mfcc-config conf/mfcc.conf --pitch-config conf/pitch.conf --nj 40 --cmd "$train_cmd" \
         ${data_dir}/train_aug_1m ${root}/exp/make_mfcc $mfccdir
 
-      # Combine the clean and augmented MELD list.  This is now roughly
+      # Combine the clean and augmented EmoVoxCeleb list.  This is now roughly
       # double the size of the original clean list.
       utils/combine_data.sh ${data_dir}/train_combined ${data_dir}/train_aug_1m ${DATA_OUTPUT_COMBINED_DIR}
       echo "stage 5 (sampling and extracting MFCCs for noise): end"

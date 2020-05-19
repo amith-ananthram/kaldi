@@ -5,7 +5,7 @@
 # add compiled Kaldi executables to the path
 . ./path.sh
 . nnet-emotion/detector/training/finetune_settings.sh
-. nnet-emotion/detector/training/meld_settings.sh
+. nnet-emotion/detector/training/emovoxceleb_settings.sh
 
 # hard fail on errors in the script
 set -e
@@ -15,7 +15,7 @@ set -e
 # default vox2/run.sh training protocol
 NUM_INPUT_DIMENSIONS=33
 # this should be the number of target emotions
-# we're mapping to in MELD (for our updated output layer)
+# we're mapping to in EmoVoxCeleb (for our updated output layer)
 NUM_TARGET_DIMENSIONS=5
 
 stage=0
