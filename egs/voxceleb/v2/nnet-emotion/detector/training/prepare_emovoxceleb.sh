@@ -140,23 +140,10 @@ fi
 # just over-write any existing generated input files)
 if [ $stage -eq 2 ]; then
 	# make the inputs for the training data
-	nnet-emotion/detector/training/generate_meld_inputs.py \
-		"$DATA_INPUT_DIR/train_sent_emo.csv" \
-		"$DATA_INPUT_DIR/train_splits/" \
-		"$DATA_OUTPUT_TRAIN_DIR"
-	utils/utt2spk_to_spk2utt.pl "$DATA_OUTPUT_TRAIN_DIR/utt2spk" > "$DATA_OUTPUT_TRAIN_DIR/spk2utt"
-	# make the inputs for the dev data
-	nnet-emotion/detector/training/generate_meld_inputs.py \
-		"$DATA_INPUT_DIR/dev_sent_emo.csv" \
-		"$DATA_INPUT_DIR/dev_splits_complete/" \
-		"$DATA_OUTPUT_DEV_DIR"
-	utils/utt2spk_to_spk2utt.pl "$DATA_OUTPUT_DEV_DIR/utt2spk" > "$DATA_OUTPUT_DEV_DIR/spk2utt"
-	# make the inputs for the test data
-	nnet-emotion/detector/training/generate_meld_inputs.py \
-		"$DATA_INPUT_DIR/test_sent_emo.csv" \
-		"$DATA_INPUT_DIR/output_repeated_splits_test/" \
-		"$DATA_OUTPUT_TEST_DIR"
-	utils/utt2spk_to_spk2utt.pl "$DATA_OUTPUT_TEST_DIR/utt2spk" > "$DATA_OUTPUT_TEST_DIR/spk2utt"
-
-	utils/combine_data.sh "$DATA_OUTPUT_COMBINED_DIR" "$DATA_OUTPUT_TRAIN_DIR" "$DATA_OUTPUT_DEV_DIR" "$DATA_OUTPUT_TEST_DIR"
+	nnet-emotion/detector/training/generate_emo_vox_celeb_inputs.py \
+		"$DATA_INPUT_DIR/senet50-ferplus-logits.mat" \
+		"$DATA_INPUT_DIR" \
+		"majority" \
+		"DATA_OUTPUT_COMBINED_DIR"
+	utils/utt2spk_to_spk2utt.pl "$DATA_OUTPUT_COMBINED_DIR/utt2spk" > "$DATA_OUTPUT_COMBINED_DIR/spk2utt"
 fi
