@@ -33,9 +33,7 @@ if [ $stage -eq 0 ]; then
 		$MODEL_INPUT_DIR 
 		$MODEL_OUTPUT_DIR 
 		$DATA_INPUT_DIR 
-		$DATA_OUTPUT_TRAIN_DIR 
-		$DATA_OUTPUT_DEV_DIR
-		$DATA_OUTPUT_TEST_DIR
+		$DATA_OUTPUT_COMBINED_DIR
 	)
 	for dir in "${dirs[@]}"
 	do
