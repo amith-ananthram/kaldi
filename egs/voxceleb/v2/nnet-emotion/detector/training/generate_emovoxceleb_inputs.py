@@ -94,10 +94,10 @@ def main():
 	output_data_dir = sys.argv[4]
 
 	# format = wav file -> frame -> emotion 
-	matlab_file = loadmat(EMOTION_LOGITS)
+	matlab_file = loadmat(input_matlab)
 
-	all_wav_logits = mat['wavLogits'][0]
-	all_wav_info = mat['images'][0][0][0][0]
+	all_wav_logits = matlab_file['wavLogits'][0]
+	all_wav_info = matlab_file['images'][0][0][0][0]
 
 	assert len(all_wav_logits) == len(all_wav_info)
 
