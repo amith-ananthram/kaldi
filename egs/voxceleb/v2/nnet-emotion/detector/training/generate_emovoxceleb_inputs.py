@@ -9,7 +9,7 @@ import glob
 import os.path
 import numpy as np
 from scipy.io import loadmat
-from defaultdict import Counter
+from collections import Counter
 
 COLLAPSED_EMOVOXCELEB_EMOTIONS = {
 	'anger': 'anger/disgust',
