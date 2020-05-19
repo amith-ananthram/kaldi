@@ -64,10 +64,11 @@ def get_majority_vote_emotion(frame_labels):
 # file_info: A.J._Buckley/test/Y8hIVOBuels_0000001.wav
 # actual_file_path: 
 def get_wav_file(wav_files, file_info):
+	wav_file_speaker = file_info.split('/')[0]
 	wav_file_group, wav_file_id = file_info.split('/')[-1].split('.')[0].split('_')
-	wav_file_key = (wav_file_group, int(wav_file_key))
+	wav_file_key = (wav_file_speaker, wav_file_group, int(wav_file_key))
 	if wav_file_key not in wav_files:
-		raise Exception("Unable to find wav_file %s, %s" % (file_info, wav_file_key))
+		raise Exception("Unable to find wav_file %s, (%s, %s, %s)" % (file_info, wav_file_key))
 	return wav_files[wav_file_key]
 
 # note that the utt2spk file we generate actually each 
@@ -86,33 +87,46 @@ def generate_wavscp(utterances, input_data_dir, output_data_dir):
 			wav_creation_cmd = "ffmpeg -v 8 -i %s -f wav -ar 16000 -acodec pcm_s16le -|" % (mp4_file_path)
 			f.write("%s %s\n" % (utterance.get_id(), wav_creation_cmd))
 
-EMOTION_LOGITS = 'corpora/voxceleb/vox1/senet50-ferplus-logits.mat'
+SPEAKER_ID_FILE = 'vox1_meta.csv'
+EMOTION_LOGITS = 'senet50-ferplus-logits.mat'
 def main():
-	input_matlab = sys.argv[1]
-	input_data_dir = sys.argv[2]
-	labeling_mode = sys.argv[3]
-	output_data_dir = sys.argv[4]
+	input_data_dir = sys.argv[1]
+	labeling_mode = sys.argv[2]
+	output_data_dir = sys.argv[3]
 
-	# format = wav file -> frame -> emotion 
-	matlab_file = loadmat(input_matlab)
+	vox_id_to_speaker = {}
+	with open(os.path.join(input_data_dir, SPEAKER_ID_FILE), 'r') as f:
+		reader = csv.DictReader(data, delimiter='\t')
+		for row in reader:
+			vox_id = row['VoxCeleb1 ID']
+			speaker = row['VGGFace1 ID']
 
-	all_wav_logits = matlab_file['wavLogits'][0]
-	all_wav_info = matlab_file['images'][0][0][0][0]
+			if vox_id in vox_id_to_speaker:
+				raise Exception("Duplicate vox_id: %s" % vox_id)
 
-	assert len(all_wav_logits) == len(all_wav_info)
+			vox_id_to_speaker[vox_id] = speaker
 
 	wav_files = {}
 	all_dev_files = set(glob.glob(os.path.join(input_data_dir, 'dev/wav/*/*/*.wav')))
 	all_test_files = set(glob.glob(os.path.join(input_data_dir, 'test/wav/*/*/*.wav')))
 	for wav_file in all_dev_files | all_test_files:
 		# dev/wav/id10046/0gaIk-T8tcM/00001.wav
+		wav_speaker = vox_id_to_speaker[wav_file.split('/')[-3]]
 		wav_file_group = wav_file.split('/')[-2]
 		wav_file_id = int(wav_file.split('/')[-1].split('.')[0])
-		wav_file_key = (wav_file_group, wav_file_id)
+		wav_file_key = (wav_speaker, wav_file_group, wav_file_id)
 		
 		if wav_file_key in wav_files:
-			raise Exception("Duplicate wav file found! %s" % (wav_file_key))
+			raise Exception("Duplicate wav file found! (%s, %s, %s)" % (wav_file_key))
 		wav_files[wav_file_key] = wav_file
+
+	# format = wav file -> frame -> emotion 
+	matlab_file = loadmat(os.path.join(input_data_dir, EMOTION_LOGITS))
+
+	all_wav_logits = matlab_file['wavLogits'][0]
+	all_wav_info = matlab_file['images'][0][0][0][0]
+
+	assert len(all_wav_logits) == len(all_wav_info)
 	
 	utterances = []
 	for utterance_id in range(len(all_wav_logits)):
