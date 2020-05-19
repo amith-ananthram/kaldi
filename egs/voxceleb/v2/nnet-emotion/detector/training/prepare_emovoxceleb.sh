@@ -139,7 +139,6 @@ fi
 if [ $stage -eq 2 ]; then
 	# make the inputs for the training data
 	nnet-emotion/detector/training/generate_emovoxceleb_inputs.py \
-		"$DATA_INPUT_DIR/senet50-ferplus-logits.mat" \
 		"$DATA_INPUT_DIR" \
 		"majority" \
 		"DATA_OUTPUT_COMBINED_DIR"
