@@ -21,6 +21,7 @@ min_num_frames=250
 # learning rates for the original layers
 num_layers=7
 first_six_lr=0
+dropout=placeholder
 
 . ./utils/parse_options.sh
 
@@ -135,7 +136,8 @@ else
     if [ $stage -eq 5 ]; then
       echo "stage 5 (sampling and extracting MFCCs for noise): start"
       # Take a random subset of the augmentations
-      utils/subset_data_dir.sh ${data_dir}/train_aug 10000 ${data_dir}/train_aug_1m
+      utils/subset_data_dir.sh ${data_dir}/train_aug 100000 ${data_dir}/train_aug_1m
+
       utils/fix_data_dir.sh ${data_dir}/train_aug_1m
 
       # Make MFCCs for the augmented data.  Note that we do not compute a new
@@ -152,10 +154,17 @@ else
   fi
 fi
 
+if [ $stage -eq 6 ]; then 
+  echo "stage $stage (adding MELD): start"
+  utils/combine_data.sh ${data_dir}/emovoxceleb_and_meld ${data_dir}/train_combined nnet-emotion/meld/outputs/data/all_meld
+  rm -rf ${data_dir}/train_combined
+  cp -r ${data_dir}/emovoxceleb_and_meld ${data_dir}/train_combined
+  echo "end stage $stage"
+fi
 
 # Now we prepare the features to generate examples for xvector training.
-if [ $stage -eq 6 ]; then
-  echo "stage 6 (removing silence if $remove_sil=True): start"
+if [ $stage -eq 7 ]; then
+  echo "stage $stage (removing silence if $remove_sil=True): start"
   # This script applies CMVN and removes nonspeech frames.  Note that this is somewhat
   # wasteful, as it roughly doubles the amount of training data on disk.  After
   # creating training examples, this can be removed.
@@ -167,13 +176,13 @@ if [ $stage -eq 6 ]; then
   else 
   	cp -r ${data_dir}/train_combined ${data_dir}/train_combined_no_sil
   fi
-  echo "stage 6 (removing silence if $remove_sil=True): end"
+  echo "stage $stage (removing silence if $remove_sil=True): end"
 fi
 
 # ./run.sh does a bunch of filtering of utterances by speakers
 # that are too infrequent -- we skip that here speaker=emotion label 
-if [ $stage -eq 7 ]; then
-  echo "stage 7 (filtering utterances that are < $min_num_frames): start"
+if [ $stage -eq 8 ]; then
+  echo "stage $stage (filtering utterances that are < $min_num_frames): start"
   # Now, we need to remove features that are too short after removing silence
   # frames.  We want atleast $min_num_frames per utterance. (note this is smaller than in v2/run.sh)
   min_len=$min_num_frames
@@ -183,18 +192,18 @@ if [ $stage -eq 7 ]; then
   mv ${data_dir}/train_combined_no_sil/utt2spk.new ${data_dir}/train_combined_no_sil/utt2spk
   utils/fix_data_dir.sh ${data_dir}/train_combined_no_sil
 
-  echo "stage 7 (filtering utterances that are < $min_num_frames): end"
+  echo "stage $stage (filtering utterances that are < $min_num_frames): end"
 fi
 
 # safe to rerun, cleans up the directory
-if [ $stage -eq 8 ]; then
-  echo "stage 8 (getting training examples): start"
+if [ $stage -eq 9 ]; then
+  echo "stage $stage (getting training examples): start"
 
   rm -rf $nnet_dir/egs
   sid/nnet3/xvector/get_egs.sh --cmd "$train_cmd" \
     --nj 8 \
     --stage 0 \
-    --frames-per-iter 25000000 \
+    --frames-per-iter 500000000 \
     --frames-per-iter-diagnostic 100000 \
     --min-frames-per-chunk $min_num_frames \
     --max-frames-per-chunk $min_num_frames \
@@ -202,12 +211,12 @@ if [ $stage -eq 8 ]; then
     --num-repeats 500 \
     ${data_dir}/train_combined_no_sil $nnet_dir/egs
 
-  echo "stage 8 (getting training examples): end"
+  echo "stage $stage (getting training examples): end"
 fi
 
-dropout_schedule='0,0.8@0.20,0.8@0.50,0.8'
+dropout_schedule=$dropout
 srand=123
-if [ $stage -eq 9 ]; then
+if [ $stage -eq 10 ]; then
   steps/nnet3/train_raw_dnn.py --stage=$train_stage \
     --cmd="$train_cmd" \
     --trainer.input-model "${MODEL_OUTPUT_DIR}/${MODIFIED_REFERENCE_MODEL}" \

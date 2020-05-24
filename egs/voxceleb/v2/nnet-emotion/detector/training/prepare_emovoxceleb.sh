@@ -141,6 +141,6 @@ if [ $stage -eq 2 ]; then
 	nnet-emotion/detector/training/generate_emovoxceleb_inputs.py \
 		"$DATA_INPUT_DIR" \
 		"majority" \
-		"DATA_OUTPUT_COMBINED_DIR"
+		"$DATA_OUTPUT_COMBINED_DIR"
 	utils/utt2spk_to_spk2utt.pl "$DATA_OUTPUT_COMBINED_DIR/utt2spk" > "$DATA_OUTPUT_COMBINED_DIR/spk2utt"
 fi
