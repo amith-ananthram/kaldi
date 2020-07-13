@@ -24,6 +24,8 @@ stage=0
 # learning rates for the original layers
 num_layers=7
 first_six_lr=0
+label_type="voice"
+label_agreement="any"
 
 . ./utils/parse_options.sh
 
@@ -140,6 +142,7 @@ if [ $stage -eq 2 ]; then
 	# make the inputs for the training data
 	nnet-emotion/detector/training/generate_cremad_inputs.py \
 		"$DATA_INPUT_DIR" \
-		"$DATA_OUTPUT_COMBINED_DIR"
+		"$DATA_OUTPUT_COMBINED_DIR" \
+		"$label_type" "$label_agreement"
 	utils/utt2spk_to_spk2utt.pl "$DATA_OUTPUT_COMBINED_DIR/utt2spk" > "$DATA_OUTPUT_COMBINED_DIR/spk2utt"
 fi

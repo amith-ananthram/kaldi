@@ -15,6 +15,8 @@ reuse_mfccs=false
 include_noise=true
 remove_sil=true
 min_num_frames=250
+label_type="voice"
+label_agreement="any"
 
 # these command line options allow specifying more 
 # / fewer layers in the fine-tuned model and different 
@@ -51,6 +53,14 @@ if [ $stage -eq 1 ]; then
   echo "stage 1 (copying and configuring reference model): end"
 fi
 
+# prepare input data: utt2spk, wav.scp (safe to rerun; it will
+# just over-write any existing generated input files)
+if [ $stage -eq 2 ]; then
+  echo "stage 2 (preparing CremaD for Kaldi -- utt2spk, spk2utt w/ label_type=$label_type and label_agreement=$label_agreement): start"
+  nnet-emotion/detector/training/prepare_cremad.sh --stage 2 --label_type $label_type --label_agreement $label_agreement
+  echo "stage 2 (preparing CremaD for Kaldi -- utt2spk, spk2utt): end"
+fi
+
 if $reuse_mfccs; then
   echo "reusing already extracted MFCCs..."
   rm -rf ${data_dir}/train_combined
@@ -62,14 +72,6 @@ if $reuse_mfccs; then
     utils/combine_data.sh ${data_dir}/train_combined ${DATA_OUTPUT_COMBINED_DIR}
   fi
 else 
-  # prepare input data: utt2spk, wav.scp (safe to rerun; it will
-  # just over-write any existing generated input files)
-  if [ $stage -eq 2 ]; then
-    echo "stage 2 (preparing CremaD for Kaldi -- utt2spk, spk2utt): start"
-    nnet-emotion/detector/training/prepare_cremad.sh --stage 2
-    echo "stage 2 (preparing CremaD for Kaldi -- utt2spk, spk2utt): end"
-  fi
-
   if [ $stage -eq 3 ]; then
     echo "stage 3 (extracting MFCCs and VAD): start"
     rm -rf $mfccdir
