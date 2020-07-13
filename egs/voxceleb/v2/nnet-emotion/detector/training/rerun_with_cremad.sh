@@ -21,6 +21,7 @@ min_num_frames=250
 # learning rates for the original layers
 num_layers=7
 first_six_lr=0
+epochs=6
 dropout=placeholder
 
 . ./utils/parse_options.sh
@@ -213,7 +214,7 @@ if [ $stage -eq 10 ]; then
   sid/nnet3/xvector/get_egs.sh --cmd "$train_cmd" \
     --nj 8 \
     --stage 0 \
-    --frames-per-iter 500000000 \
+    --frames-per-iter 10000000 \
     --frames-per-iter-diagnostic 100000 \
     --min-frames-per-chunk $min_num_frames \
     --max-frames-per-chunk $min_num_frames \
@@ -239,7 +240,7 @@ if [ $stage -eq 11 ]; then
     --trainer.optimization.minibatch-size=64 \
     --trainer.srand=$srand \
     --trainer.max-param-change=2 \
-    --trainer.num-epochs=6 \
+    --trainer.num-epochs=$epochs \
     --trainer.dropout-schedule="$dropout_schedule" \
     --trainer.shuffle-buffer-size=1000 \
     --egs.frames-per-eg=1 \
