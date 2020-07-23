@@ -16,6 +16,8 @@ set -e
 
 # questions:
 #	should we be subtracting corpus-level means?
+# 	they use the mean vectors for the "train" vectors for EER, should we?
+#		(fwiw they don't for voxceleb)
 
 speech_dir=placeholder
 text_dir=placeholder
@@ -58,11 +60,7 @@ $train_cmd $work_dir/log/scoring.log \
     "cat '$work_dir/trials' | cut -d\  --fields=1,2 |" $work_dir/scores || exit 1;
 
 eer=`compute-eer <(local/prepare_for_eer.py $work_dir/trials $work_dir/scores)`
-echo "EER: $eer%"
+echo "EER: $eer%" | tee -a $work_dir/results.txt
 
-echo "Calculating accuracy and F1..."
-lda-plda-emotion/calculate_accuracy_and_f1.py --score_file $work_dir/scores
-
-echo "Plotting DCF..."
-
-echo "Copying output files..."
+echo "Calculating DET, accuracy and F1..."
+lda-plda-emotion/calculate_det_accuracy_and_f1.py --trials_file $work_dir/trials --score_file $work_dir/scores -o $work_dir | tee -a $work_dir/results.txt
