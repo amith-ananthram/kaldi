@@ -30,12 +30,19 @@ def get_cremad_utterances(speech_dir, text_dir):
 
 	with ReadHelper('scp:%s/cremad/xvector.scp' % speech_dir):
 		for utterance_id, speech_vector in reader:
-			if utterance_id in utterances:
+			if utterance_id not in utterances:
 				raise Exception("Speech vector for unknown utterance: %s" % utterance_id)
 
 			utterances[utterance_id]['speech'] = speech_vector
 
-	# get random dialog text vector for same speech
+	with open('%s/cremad/text_embeddings.txt', 'r') as f:
+		for line in f.readlines():
+			utterance_id, text_embeddings = line.split('\t')
+
+			if utterance_id not in utterances:
+				raise Exception("Text vector for unknown utterance: %s" % utterance_id)
+
+			utterances[utterance_id]['text'] = list(map(float, text_embeddings[1:-1].split()))
 
 # example utterance id: anger/disgust-dev-1-11
 def get_meld_utterances(speech_dir, text_dir):
@@ -44,7 +51,7 @@ def get_meld_utterances(speech_dir, text_dir):
 		for line in f.readlines():
 			utterance_id, _ = line.split(' ')
 
-			if utterance_id in utterances:
+			if utterance_id not in utterances:
 				raise Exception("Duplicate utterance: %s" % utterance_id)
 
 			utterances[utterance_id]['emotion'] = utterance_id.split('-')[0]
@@ -56,7 +63,14 @@ def get_meld_utterances(speech_dir, text_dir):
 
 			utterances[utterance_id]['speech'] = speech_vector
 
-	# get text vector 
+	with open('%s/meld/text_embeddings.txt', 'r') as f:
+		for line in f.readlines():
+			utterance_id, text_embeddings = line.split('\t')
+
+			if utterance_id not in utterances:
+				raise Exception("Text vector for unknown utterance: %s" % utterance_id)
+
+			utterances[utterance_id]['text'] = list(map(float, text_embeddings[1:-1].split()))
 
 # example utterance id: sadness-test-05M-script-02_2-032-M
 def get_iemocap_utterances(speech_dir, text_dir, subset):
@@ -77,12 +91,28 @@ def get_iemocap_utterances(speech_dir, text_dir, subset):
 
 	with ReadHelper('scp:%s/meld/xvector.scp' % speech_dir):
 		for utterance_id, speech_vector in reader:
-			if utterance_id in utterances:
+			session = int(utterance_id.split('-')[2][0:2])
+
+			if session != int(subset[-1:]):
+				continue
+
+			if utterance_id not in utterances:
 				raise Exception("Speech vector for unknown utterance: %s" % utterance_id)
 
 			utterances[utterance_id]['speech'] = speech_vector
 
-	# get text vectors
+	with open('%s/iemocap/text_embeddings.txt', 'r') as f:
+		for line in f.readlines():
+			utterance_id, text_embeddings = line.split('\t')
+			session = int(utterance_id.split('-')[2][0:2])
+
+			if session != int(subset[-1:]):
+				continue
+
+			if utterance_id not in utterances:
+				raise Exception("Text vector for unknown utterance: %s" % utterance_id)
+
+			utterances[utterance_id]['text'] = list(map(float, text_embeddings[1:-1].split()))
 
 def get_corpus_utterances(speech_dir, text_dir, corpus):
 	if corpus == 'cremad':
