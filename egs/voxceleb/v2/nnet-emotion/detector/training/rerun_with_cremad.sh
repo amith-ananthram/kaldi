@@ -139,7 +139,7 @@ else
     if [ $stage -eq 5 ]; then
       echo "stage 5 (sampling and extracting MFCCs for noise): start"
       # Take a random subset of the augmentations
-      utils/subset_data_dir.sh ${data_dir}/train_aug 100000 ${data_dir}/train_aug_1m
+      utils/subset_data_dir.sh ${data_dir}/train_aug 6000 ${data_dir}/train_aug_1m
 
       utils/fix_data_dir.sh ${data_dir}/train_aug_1m
 
