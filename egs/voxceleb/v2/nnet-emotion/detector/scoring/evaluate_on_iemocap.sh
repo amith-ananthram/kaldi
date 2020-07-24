@@ -41,6 +41,9 @@ if [ $stage -eq 1 ]; then
 	steps/make_mfcc_pitch.sh --write-utt2num-frames true --mfcc-config conf/mfcc.conf --pitch-config conf/pitch.conf --nj 40 --cmd "$train_cmd" \
 		"${features_path}/all_iemocap" ${features_path}/exp/make_mfcc $MFCC_DIR
 	utils/fix_data_dir.sh "${features_path}/all_iemocap"
+	sid/compute_vad_decision.sh --nj 40 --cmd "$train_cmd" \
+      		"${features_path}/all_iemocap" ${features_path}/exp/make_vad $MFCC_DIR
+	utils/fix_data_dir.sh "${features_path}/all_iemocap"
 	echo "Stage 1: end"
 fi
 
