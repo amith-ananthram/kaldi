@@ -29,29 +29,31 @@ def get_cremad_utterances(speech_dir, text_dir):
 
 			utterances[utterance_id]['emotion'] = utterance_id.split('-')[0]
 
-	with ReadHelper('scp:%s/cremad/xvector.scp' % speech_dir):
-		for utterance_id, speech_vector in reader:
-			if utterance_id not in utterances:
-				raise Exception("Speech vector for unknown utterance: %s" % utterance_id)
+	if speech_dir != 'none':
+		with ReadHelper('scp:%s/cremad/xvector.scp' % speech_dir):
+			for utterance_id, speech_vector in reader:
+				if utterance_id not in utterances:
+					raise Exception("Speech vector for unknown utterance: %s" % utterance_id)
 
-			utterances[utterance_id]['speech'] = speech_vector
+				utterances[utterance_id]['speech'] = speech_vector
 
-	embeddings_by_emotion = defaultdict(list)
-	with open('%s/dd_embeddings.txt', 'r') as f:
-		for line in f.readlines():
-			emotion, text_embeddings = line.split('\t')
+	if text_dir != 'none':
+		embeddings_by_emotion = defaultdict(list)
+		with open('%s/dd_embeddings.txt', 'r') as f:
+			for line in f.readlines():
+				emotion, text_embeddings = line.split('\t')
 
-			if utterance_id not in utterances:
-				raise Exception("Text vector for unknown utterance: %s" % utterance_id)
+				if utterance_id not in utterances:
+					raise Exception("Text vector for unknown utterance: %s" % utterance_id)
 
-			embeddings_by_emotion[emotion].append(
-				list(map(float, text_embeddings[1:-1].split()))
-			)
+				embeddings_by_emotion[emotion].append(
+					list(map(float, text_embeddings[1:-1].split()))
+				)
 
-	for utterance in utterances.values():
-		emotion = utterance['emotion']
-		random_text_vector = random.sample(embeddings_by_emotion[emotion])
-		utterance['text'] = random_text_vector
+		for utterance in utterances.values():
+			emotion = utterance['emotion']
+			random_text_vector = random.sample(embeddings_by_emotion[emotion])
+			utterance['text'] = random_text_vector
 
 # example utterance id: anger/disgust-dev-1-11
 def get_meld_utterances(speech_dir, text_dir):
@@ -65,21 +67,23 @@ def get_meld_utterances(speech_dir, text_dir):
 
 			utterances[utterance_id]['emotion'] = utterance_id.split('-')[0]
 
-	with ReadHelper('scp:%s/meld/xvector.scp' % speech_dir):
-		for utterance_id, speech_vector in reader:
-			if utterance_id in utterances:
-				raise Exception("Speech vector for unknown utterance: %s" % utterance_id)
+	if speech_dir != 'none':
+		with ReadHelper('scp:%s/meld/xvector.scp' % speech_dir):
+			for utterance_id, speech_vector in reader:
+				if utterance_id in utterances:
+					raise Exception("Speech vector for unknown utterance: %s" % utterance_id)
 
-			utterances[utterance_id]['speech'] = speech_vector
+				utterances[utterance_id]['speech'] = speech_vector
 
-	with open('%s/meld_embeddings.txt', 'r') as f:
-		for line in f.readlines():
-			utterance_id, text_embeddings = line.split('\t')
+	if text_dir != 'none':
+		with open('%s/meld_embeddings.txt', 'r') as f:
+			for line in f.readlines():
+				utterance_id, text_embeddings = line.split('\t')
 
-			if utterance_id not in utterances:
-				raise Exception("Text vector for unknown utterance: %s" % utterance_id)
+				if utterance_id not in utterances:
+					raise Exception("Text vector for unknown utterance: %s" % utterance_id)
 
-			utterances[utterance_id]['text'] = list(map(float, text_embeddings[1:-1].split()))
+				utterances[utterance_id]['text'] = list(map(float, text_embeddings[1:-1].split()))
 
 # example utterance id: sadness-test-05M-script-02_2-032-M
 def get_iemocap_utterances(speech_dir, text_dir, subset):
@@ -98,30 +102,32 @@ def get_iemocap_utterances(speech_dir, text_dir, subset):
 			utterances[utterance_id]['session'] = session
 			utterances[utterance_id]['emotion'] = utterance_id.split('-')[0]
 
-	with ReadHelper('scp:%s/meld/xvector.scp' % speech_dir):
-		for utterance_id, speech_vector in reader:
-			session = int(utterance_id.split('-')[2][0:2])
+	if speech_dir != 'none':
+		with ReadHelper('scp:%s/meld/xvector.scp' % speech_dir):
+			for utterance_id, speech_vector in reader:
+				session = int(utterance_id.split('-')[2][0:2])
 
-			if session != int(subset[-1:]):
-				continue
+				if session != int(subset[-1:]):
+					continue
 
-			if utterance_id not in utterances:
-				raise Exception("Speech vector for unknown utterance: %s" % utterance_id)
+				if utterance_id not in utterances:
+					raise Exception("Speech vector for unknown utterance: %s" % utterance_id)
 
-			utterances[utterance_id]['speech'] = speech_vector
+				utterances[utterance_id]['speech'] = speech_vector
 
-	with open('%s/iemocap_embeddings.txt', 'r') as f:
-		for line in f.readlines():
-			utterance_id, text_embeddings = line.split('\t')
-			session = int(utterance_id.split('-')[2][0:2])
+	if text_dir != 'none':
+		with open('%s/iemocap_embeddings.txt', 'r') as f:
+			for line in f.readlines():
+				utterance_id, text_embeddings = line.split('\t')
+				session = int(utterance_id.split('-')[2][0:2])
 
-			if session != int(subset[-1:]):
-				continue
+				if session != int(subset[-1:]):
+					continue
 
-			if utterance_id not in utterances:
-				raise Exception("Text vector for unknown utterance: %s" % utterance_id)
+				if utterance_id not in utterances:
+					raise Exception("Text vector for unknown utterance: %s" % utterance_id)
 
-			utterances[utterance_id]['text'] = list(map(float, text_embeddings[1:-1].split()))
+				utterances[utterance_id]['text'] = list(map(float, text_embeddings[1:-1].split()))
 
 def get_corpus_utterances(speech_dir, text_dir, corpus):
 	if corpus == 'cremad':
@@ -166,12 +172,19 @@ def write_output_files(prefix, utterances, output_dir):
 		'ark,scp:/%s/%s_xvector.ark,/%s/%s_xvector.scp' % (
 			output_dir, prefix, output_dir, prefix)) as writer:
 		for utterance_id in sorted(utterances.keys()):
-			writer(
-				utterance_id, 
-				np.concatenate(
+			utterance = utterances[utterance_id]
+			if 'text' not in utterance:
+				feature_vector = utterance['speech']
+			elif 'speech' not in utterance:
+				feature_vector = utterance['text']
+			else:
+				feature_vector = np.concatenate(
 					utterances[utterance_id]['speech'],
 					utterances[utterance_id]['text']
 				)
+			writer(
+				utterance_id, 
+				feature_vector
 			)
 
 def write_trials_file(train_utterances, test_utterances, output_dir):
@@ -202,7 +215,7 @@ iemocap_subset_to_exclude = list(filter(lambda corpus: 'iemocap' in corpus, trai
 if len(iemocap_subset_to_exclude) > 1:
 	raise Exception("Can't specify excluding more than 1 IEMOCAP subset: %s" % (iemocap_subset_to_exclude))
 
-test_corpora = ['iemocap%s' % i for i in range(1, 6)] \ 
+test_corpora = ['iemocap%s' % i for i in range(1, 6)] \
 	if len(iemocap_subset_to_exclude) == 0 else iemocap_subset_to_exclude
 
 train_utterances = get_utterances(speech_dir, text_dir, train_corpora)

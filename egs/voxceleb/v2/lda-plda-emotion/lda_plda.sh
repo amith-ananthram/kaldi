@@ -19,9 +19,11 @@ set -e
 # 	they use the mean vectors for the "train" vectors for EER, should we?
 #		(fwiw they don't for voxceleb)
 
+variant=placeholder
 speech_dir=placeholder
 text_dir=placeholder
 train_corpora=placeholder
+output_dir=placeholder
 
 lda_dim=200
 work_dir="lda_plda_work"
@@ -63,4 +65,7 @@ eer=`compute-eer <(local/prepare_for_eer.py $work_dir/trials $work_dir/scores)`
 echo "EER: $eer%" | tee -a $work_dir/results.txt
 
 echo "Calculating DET, accuracy and F1..."
-lda-plda-emotion/calculate_det_accuracy_and_f1.py --trials_file $work_dir/trials --score_file $work_dir/scores -o $work_dir | tee -a $work_dir/results.txt
+lda-plda-emotion/calculate_det_accuracy_and_f1.py --variant $variant --trials_file $work_dir/trials --score_file $work_dir/scores -o $work_dir | tee -a $work_dir/results.txt
+
+cp $work_dir/results.txt $output_dir/$variant_results.txt
+cp $work_dir/$variant* $output_dir/
