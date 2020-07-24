@@ -1,4 +1,5 @@
 import sys
+import random
 from kaldiio import ReadHelper, WriteHelper
 
 from collections import defaultdict
@@ -35,14 +36,22 @@ def get_cremad_utterances(speech_dir, text_dir):
 
 			utterances[utterance_id]['speech'] = speech_vector
 
-	with open('%s/cremad/text_embeddings.txt', 'r') as f:
+	embeddings_by_emotion = defaultdict(list)
+	with open('%s/dd_embeddings.txt', 'r') as f:
 		for line in f.readlines():
-			utterance_id, text_embeddings = line.split('\t')
+			emotion, text_embeddings = line.split('\t')
 
 			if utterance_id not in utterances:
 				raise Exception("Text vector for unknown utterance: %s" % utterance_id)
 
-			utterances[utterance_id]['text'] = list(map(float, text_embeddings[1:-1].split()))
+			embeddings_by_emotion[emotion].append(
+				list(map(float, text_embeddings[1:-1].split()))
+			)
+
+	for utterance in utterances.values():
+		emotion = utterance['emotion']
+		random_text_vector = random.sample(embeddings_by_emotion[emotion])
+		utterance['text'] = random_text_vector
 
 # example utterance id: anger/disgust-dev-1-11
 def get_meld_utterances(speech_dir, text_dir):
@@ -63,7 +72,7 @@ def get_meld_utterances(speech_dir, text_dir):
 
 			utterances[utterance_id]['speech'] = speech_vector
 
-	with open('%s/meld/text_embeddings.txt', 'r') as f:
+	with open('%s/meld_embeddings.txt', 'r') as f:
 		for line in f.readlines():
 			utterance_id, text_embeddings = line.split('\t')
 
@@ -101,7 +110,7 @@ def get_iemocap_utterances(speech_dir, text_dir, subset):
 
 			utterances[utterance_id]['speech'] = speech_vector
 
-	with open('%s/iemocap/text_embeddings.txt', 'r') as f:
+	with open('%s/iemocap_embeddings.txt', 'r') as f:
 		for line in f.readlines():
 			utterance_id, text_embeddings = line.split('\t')
 			session = int(utterance_id.split('-')[2][0:2])
