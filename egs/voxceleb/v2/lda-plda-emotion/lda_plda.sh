@@ -34,7 +34,7 @@ rm -rf $work_dir
 mkdir -p $work_dir
 
 echo "Preparing training and testing inputs..."
-lda-plda-emotion/prepare_lda_plda_inputs.py $speech_dir $text_dir $train_corpora $work_dir
+python lda-plda-emotion/prepare_lda_plda_inputs.py $speech_dir $text_dir $train_corpora $work_dir
 
 echo "Computing mean across all training vectors..."
 $train_cmd $work_dir/log/compute_mean.log \
@@ -65,7 +65,7 @@ eer=`compute-eer <(local/prepare_for_eer.py $work_dir/trials $work_dir/scores)`
 echo "EER: $eer%" | tee -a $work_dir/results.txt
 
 echo "Calculating DET, accuracy and F1..."
-lda-plda-emotion/calculate_det_accuracy_and_f1.py --variant $variant --trials_file $work_dir/trials --score_file $work_dir/scores -o $work_dir | tee -a $work_dir/results.txt
+python lda-plda-emotion/calculate_det_accuracy_and_f1.py --variant $variant --trials_file $work_dir/trials --score_file $work_dir/scores -o $work_dir | tee -a $work_dir/results.txt
 
 cp $work_dir/results.txt $output_dir/$variant_results.txt
 cp $work_dir/$variant* $output_dir/

@@ -30,7 +30,7 @@ def get_cremad_utterances(speech_dir, text_dir):
 			utterances[utterance_id]['emotion'] = utterance_id.split('-')[0]
 
 	if speech_dir != 'none':
-		with ReadHelper('scp:%s/cremad/xvector.scp' % speech_dir):
+		with ReadHelper('scp:%s/cremad/xvector.scp' % speech_dir) as reader:
 			for utterance_id, speech_vector in reader:
 				if utterance_id not in utterances:
 					raise Exception("Speech vector for unknown utterance: %s" % utterance_id)
@@ -68,7 +68,7 @@ def get_meld_utterances(speech_dir, text_dir):
 			utterances[utterance_id]['emotion'] = utterance_id.split('-')[0]
 
 	if speech_dir != 'none':
-		with ReadHelper('scp:%s/meld/xvector.scp' % speech_dir):
+		with ReadHelper('scp:%s/meld/xvector.scp' % speech_dir) as reader:
 			for utterance_id, speech_vector in reader:
 				if utterance_id in utterances:
 					raise Exception("Speech vector for unknown utterance: %s" % utterance_id)
@@ -103,7 +103,7 @@ def get_iemocap_utterances(speech_dir, text_dir, subset):
 			utterances[utterance_id]['emotion'] = utterance_id.split('-')[0]
 
 	if speech_dir != 'none':
-		with ReadHelper('scp:%s/meld/xvector.scp' % speech_dir):
+		with ReadHelper('scp:%s/meld/xvector.scp' % speech_dir) as reader:
 			for utterance_id, speech_vector in reader:
 				session = int(utterance_id.split('-')[2][0:2])
 
