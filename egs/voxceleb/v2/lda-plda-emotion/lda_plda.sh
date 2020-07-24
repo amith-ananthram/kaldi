@@ -32,7 +32,7 @@ rm -rf $work_dir
 mkdir -p $work_dir
 
 echo "Preparing training and testing inputs..."
-lda-plda-emotion/prepare_lda_plda_inputs.py $speech_dir $text_dir $train_corpora $work_dir
+python lda-plda-emotion/prepare_lda_plda_inputs.py $speech_dir $text_dir $train_corpora $work_dir
 
 echo "Computing mean across all training vectors..."
 $train_cmd $work_dir/log/compute_mean.log \

@@ -29,7 +29,7 @@ def get_cremad_utterances(speech_dir, text_dir):
 
 			utterances[utterance_id]['emotion'] = utterance_id.split('-')[0]
 
-	with ReadHelper('scp:%s/cremad/xvector.scp' % speech_dir):
+	with ReadHelper('scp:%s/cremad/xvector.scp' % speech_dir) as reader:
 		for utterance_id, speech_vector in reader:
 			if utterance_id not in utterances:
 				raise Exception("Speech vector for unknown utterance: %s" % utterance_id)
@@ -37,8 +37,9 @@ def get_cremad_utterances(speech_dir, text_dir):
 			utterances[utterance_id]['speech'] = speech_vector
 
 	embeddings_by_emotion = defaultdict(list)
-	with open('%s/dd_embeddings.txt', 'r') as f:
+	with open('%s/dd_embeddings.txt' % text_dir, 'r') as f:
 		for line in f.readlines():
+			print(line)
 			emotion, text_embeddings = line.split('\t')
 
 			if utterance_id not in utterances:
@@ -65,14 +66,14 @@ def get_meld_utterances(speech_dir, text_dir):
 
 			utterances[utterance_id]['emotion'] = utterance_id.split('-')[0]
 
-	with ReadHelper('scp:%s/meld/xvector.scp' % speech_dir):
+	with ReadHelper('scp:%s/meld/xvector.scp' % speech_dir) as reader:
 		for utterance_id, speech_vector in reader:
 			if utterance_id in utterances:
 				raise Exception("Speech vector for unknown utterance: %s" % utterance_id)
 
 			utterances[utterance_id]['speech'] = speech_vector
 
-	with open('%s/meld_embeddings.txt', 'r') as f:
+	with open('%s/meld_embeddings.txt' % text_dir, 'r') as f:
 		for line in f.readlines():
 			utterance_id, text_embeddings = line.split('\t')
 
@@ -98,7 +99,7 @@ def get_iemocap_utterances(speech_dir, text_dir, subset):
 			utterances[utterance_id]['session'] = session
 			utterances[utterance_id]['emotion'] = utterance_id.split('-')[0]
 
-	with ReadHelper('scp:%s/meld/xvector.scp' % speech_dir):
+	with ReadHelper('scp:%s/meld/xvector.scp' % speech_dir) as reader:
 		for utterance_id, speech_vector in reader:
 			session = int(utterance_id.split('-')[2][0:2])
 
@@ -110,7 +111,7 @@ def get_iemocap_utterances(speech_dir, text_dir, subset):
 
 			utterances[utterance_id]['speech'] = speech_vector
 
-	with open('%s/iemocap_embeddings.txt', 'r') as f:
+	with open('%s/iemocap_embeddings.txt' % text_dir, 'r') as f:
 		for line in f.readlines():
 			utterance_id, text_embeddings = line.split('\t')
 			session = int(utterance_id.split('-')[2][0:2])
@@ -202,7 +203,7 @@ iemocap_subset_to_exclude = list(filter(lambda corpus: 'iemocap' in corpus, trai
 if len(iemocap_subset_to_exclude) > 1:
 	raise Exception("Can't specify excluding more than 1 IEMOCAP subset: %s" % (iemocap_subset_to_exclude))
 
-test_corpora = ['iemocap%s' % i for i in range(1, 6)] \ 
+test_corpora = ['iemocap%s' % i for i in range(1, 6)] \
 	if len(iemocap_subset_to_exclude) == 0 else iemocap_subset_to_exclude
 
 train_utterances = get_utterances(speech_dir, text_dir, train_corpora)
