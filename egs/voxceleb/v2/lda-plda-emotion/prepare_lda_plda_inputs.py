@@ -223,9 +223,17 @@ if len(invalid_corpora) > 0:
 iemocap_subset_to_exclude = list(filter(lambda corpus: 'iemocap' in corpus, train_corpora))
 if len(iemocap_subset_to_exclude) > 1:
 	raise Exception("Can't specify excluding more than 1 IEMOCAP subset: %s" % (iemocap_subset_to_exclude))
+elif len(iemocap_subset_to_exclude) == 1:
+	train_corpora.remove(iemocap_subset_to_exclude)
+	for iemocap_subset in ['iemocap%s' % i for i in range(1, 6)]:
+		if iemocap_subset != iemocap_subset_to_exclude:
+			train_corpora.append(iemocap_subset)
 
 test_corpora = ['iemocap%s' % i for i in range(1, 6)] \
 	if len(iemocap_subset_to_exclude) == 0 else iemocap_subset_to_exclude
+
+print("Train corpora: %s" % train_corpora)
+print("Test corpora: %s" % test_corpora)
 
 train_utterances = get_utterances(speech_dir, text_dir, train_corpora)
 test_utterances = get_utterances(speech_dir, text_dir, test_corpora)
