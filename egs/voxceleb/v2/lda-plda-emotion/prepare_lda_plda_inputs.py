@@ -54,6 +54,7 @@ def get_cremad_utterances(speech_dir, text_dir):
 			emotion = utterance['emotion']
 			random_text_vector = random.sample(embeddings_by_emotion[emotion])
 			utterance['text'] = random_text_vector
+	return utterances
 
 # example utterance id: anger/disgust-dev-1-11
 def get_meld_utterances(speech_dir, text_dir):
@@ -84,6 +85,7 @@ def get_meld_utterances(speech_dir, text_dir):
 					raise Exception("Text vector for unknown utterance: %s" % utterance_id)
 
 				utterances[utterance_id]['text'] = list(map(float, text_embeddings[1:-1].split()))
+	return utterances
 
 # example utterance id: sadness-test-05M-script-02_2-032-M
 def get_iemocap_utterances(speech_dir, text_dir, subset):
@@ -103,7 +105,7 @@ def get_iemocap_utterances(speech_dir, text_dir, subset):
 			utterances[utterance_id]['emotion'] = utterance_id.split('-')[0]
 
 	if speech_dir != 'none':
-		with ReadHelper('scp:%s/meld/xvector.scp' % speech_dir) as reader:
+		with ReadHelper('scp:%s/iemocap/xvector.scp' % speech_dir) as reader:
 			for utterance_id, speech_vector in reader:
 				session = int(utterance_id.split('-')[2][0:2])
 
@@ -128,6 +130,8 @@ def get_iemocap_utterances(speech_dir, text_dir, subset):
 					raise Exception("Text vector for unknown utterance: %s" % utterance_id)
 
 				utterances[utterance_id]['text'] = list(map(float, text_embeddings[1:-1].split()))
+
+	return utterances
 
 def get_corpus_utterances(speech_dir, text_dir, corpus):
 	if corpus == 'cremad':
@@ -157,8 +161,8 @@ def write_output_files(prefix, utterances, output_dir):
 	for utterance_id, utterance in utterances.items():
 		emotion = EMOTION_TO_ID[utterance['emotion']]
 
-		utt2spk[utterance_id] = utterance
-		spk2utt[utterance].append(utterance_id)
+		utt2spk[utterance_id] = emotion
+		spk2utt[emotion].append(utterance_id)
 
 	with open('%s/%s_utt2spk' % (output_dir, prefix), 'w') as f:
 		for utterance_id in sorted(utt2spk.keys()):
@@ -169,11 +173,14 @@ def write_output_files(prefix, utterances, output_dir):
 			f.write("%s %s\n" % (speaker, ' '.join(spk2utt[speaker])))
 
 	with WriteHelper(
-		'ark,scp:/%s/%s_xvector.ark,/%s/%s_xvector.scp' % (
+		'ark,scp:%s/%s_xvector.ark,%s/%s_xvector.scp' % (
 			output_dir, prefix, output_dir, prefix)) as writer:
 		for utterance_id in sorted(utterances.keys()):
 			utterance = utterances[utterance_id]
 			if 'text' not in utterance:
+				if 'speech' not in utterance:
+					print("Missing speech vector: %s" % utterance_id)
+					continue
 				feature_vector = utterance['speech']
 			elif 'speech' not in utterance:
 				feature_vector = utterance['text']
@@ -188,9 +195,11 @@ def write_output_files(prefix, utterances, output_dir):
 			)
 
 def write_trials_file(train_utterances, test_utterances, output_dir):
-	with open('%s/trials', 'w') as f:
+	with open('%s/trials' % output_dir, 'w') as f:
 		for train_utterance_id in sorted(train_utterances.keys()):
 			for test_utterance_id in sorted(test_utterances.keys()):
+				assert not train_utterance_id == test_utterance_id
+					
 				if train_utterances[train_utterance_id] == test_utterances[test_utterance_id]:
 					label = 'target'
 				else:
