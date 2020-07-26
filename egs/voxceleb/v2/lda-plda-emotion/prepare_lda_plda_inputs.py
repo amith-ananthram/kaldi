@@ -195,16 +195,21 @@ def write_output_files(prefix, utterances, output_dir):
 			)
 
 def write_trials_file(train_utterances, test_utterances, output_dir):
+	num_target = 0
+	num_nontarget = 0
 	with open('%s/trials' % output_dir, 'w') as f:
 		for train_utterance_id in sorted(train_utterances.keys()):
 			for test_utterance_id in sorted(test_utterances.keys()):
 				assert not train_utterance_id == test_utterance_id
 					
-				if train_utterances[train_utterance_id] == test_utterances[test_utterance_id]:
+				if train_utterances[train_utterance_id]['emotion'] == test_utterances[test_utterance_id]['emotion']:
 					label = 'target'
+					num_target += 1
 				else:
 					label = 'nontarget'
+					num_nontarget += 1
 				f.write('%s %s %s\n' % (train_utterance_id, test_utterance_id, label))
+	print("target: %s, nontarget: %s" % (num_target, num_nontarget))
 
 
 speech_dir = sys.argv[1]

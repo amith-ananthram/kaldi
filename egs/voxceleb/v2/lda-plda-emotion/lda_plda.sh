@@ -77,13 +77,10 @@ if [ $stage -le 5 ]; then
 fi
 
 if [ $stage -le 6 ]; then
-	echo "Calculating results..."
-	eer=`compute-eer <(local/prepare_for_eer.py $work_dir/trials $work_dir/scores) 2> /dev/null`
-	echo "EER: $eer%" | tee -a $work_dir/results.txt
+	echo "Calculating EER, DET, accuracy and F1..."
+	python lda-plda-emotion/calculate_det_accuracy_and_f1.py --variant $variant --trials-file $work_dir/trials --score-file $work_dir/scores -o $work_dir | tee -a $work_dir/results.txt
 
-	echo "Calculating DET, accuracy and F1..."
-	python lda-plda-emotion/calculate_det_accuracy_and_f1.py --variant $variant --trials_file $work_dir/trials --score_file $work_dir/scores -o $work_dir | tee -a $work_dir/results.txt
-
-	cp $work_dir/results.txt $output_dir/$variant_results.txt
-	cp $work_dir/$variant* $output_dir/
+	mkdir -p $output_dir/$variant
+	cp $work_dir/results.txt $output_dir/$variant/${variant}_results.txt
+	cp $work_dir/$variant* $output_dir/$variant
 fi
