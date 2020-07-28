@@ -63,7 +63,7 @@ def get_meld_utterances(speech_dir, text_dir):
 		for line in f.readlines():
 			utterance_id, _ = line.split(' ')
 
-			if utterance_id not in utterances:
+			if utterance_id in utterances:
 				raise Exception("Duplicate utterance: %s" % utterance_id)
 
 			utterances[utterance_id]['emotion'] = utterance_id.split('-')[0]
@@ -71,7 +71,7 @@ def get_meld_utterances(speech_dir, text_dir):
 	if speech_dir != 'none':
 		with ReadHelper('scp:%s/meld/xvector.scp' % speech_dir) as reader:
 			for utterance_id, speech_vector in reader:
-				if utterance_id in utterances:
+				if utterance_id not in utterances:
 					raise Exception("Speech vector for unknown utterance: %s" % utterance_id)
 
 				utterances[utterance_id]['speech'] = speech_vector
@@ -229,10 +229,10 @@ iemocap_subset_to_exclude = list(filter(lambda corpus: 'iemocap' in corpus, trai
 if len(iemocap_subset_to_exclude) > 1:
 	raise Exception("Can't specify excluding more than 1 IEMOCAP subset: %s" % (iemocap_subset_to_exclude))
 elif len(iemocap_subset_to_exclude) == 1:
-	train_corpora.remove(iemocap_subset_to_exclude)
+	train_corpora.remove(iemocap_subset_to_exclude[0])
 	for iemocap_subset in ['iemocap%s' % i for i in range(1, 6)]:
-		if iemocap_subset != iemocap_subset_to_exclude:
-			train_corpora.append(iemocap_subset)
+		if iemocap_subset != iemocap_subset_to_exclude[0]:
+			train_corpora.add(iemocap_subset)
 
 test_corpora = ['iemocap%s' % i for i in range(1, 6)] \
 	if len(iemocap_subset_to_exclude) == 0 else iemocap_subset_to_exclude
