@@ -1,5 +1,6 @@
 import sys
 import random
+import pickle
 from kaldiio import ReadHelper, WriteHelper
 
 from collections import defaultdict
@@ -39,19 +40,16 @@ def get_cremad_utterances(speech_dir, text_dir):
 
 	if text_dir != 'none':
 		embeddings_by_emotion = defaultdict(list)
-		with open('%s/dd_embeddings.txt', 'r') as f:
-			for line in f.readlines():
-				emotion, text_embeddings = line.split('\t')
+		with open('%s/dd_embeddings.pkl', 'rb') as f:
+			dd = pickle.load(f)
+			for _, row in iemocap.iterrows():
+				utterance_id = row['ID']
+				emotion = utterance_id.split('-')[0]
+				embeddings_by_emotion[emotion].append(row['Text Embeddings'])
 
-				if utterance_id not in utterances:
-					raise Exception("Text vector for unknown utterance: %s" % utterance_id)
-
-				embeddings_by_emotion[emotion].append(
-					list(map(float, text_embeddings[1:-1].split()))
-				)
-
-		for utterance in utterances.values():
+		for utterance_id, utterance in utterances.items():
 			emotion = utterance['emotion']
+			random.seed(utterance_id)
 			random_text_vector = random.sample(embeddings_by_emotion[emotion])
 			utterance['text'] = random_text_vector
 	return utterances
@@ -77,14 +75,15 @@ def get_meld_utterances(speech_dir, text_dir):
 				utterances[utterance_id]['speech'] = speech_vector
 
 	if text_dir != 'none':
-		with open('%s/meld_embeddings.txt', 'r') as f:
-			for line in f.readlines():
-				utterance_id, text_embeddings = line.split('\t')
+		with open('%s/meld_embeddings.pkl', 'rb') as f:
+			meld = pickle.load(f)
+			for _, row in meld.iterrows():
+				utterance_id, text_embeddings = row['ID'], row['Text Embeddings']
 
 				if utterance_id not in utterances:
 					raise Exception("Text vector for unknown utterance: %s" % utterance_id)
 
-				utterances[utterance_id]['text'] = list(map(float, text_embeddings[1:-1].split()))
+				utterances[utterance_id]['text'] = text_embeddings
 	return utterances
 
 # example utterance id: sadness-test-05M-script-02_2-032-M
@@ -118,9 +117,10 @@ def get_iemocap_utterances(speech_dir, text_dir, subset):
 				utterances[utterance_id]['speech'] = speech_vector
 
 	if text_dir != 'none':
-		with open('%s/iemocap_embeddings.txt', 'r') as f:
-			for line in f.readlines():
-				utterance_id, text_embeddings = line.split('\t')
+		with open('%s/iemocap_embeddings.pkl', 'rb') as f:
+			iemocap = pickle.load(f)
+			for _, row in iemocap.iterrows():
+				utterance_id = row['ID']
 				session = int(utterance_id.split('-')[2][0:2])
 
 				if session != int(subset[-1:]):
@@ -129,7 +129,7 @@ def get_iemocap_utterances(speech_dir, text_dir, subset):
 				if utterance_id not in utterances:
 					raise Exception("Text vector for unknown utterance: %s" % utterance_id)
 
-				utterances[utterance_id]['text'] = list(map(float, text_embeddings[1:-1].split()))
+				utterances[utterance_id]['text'] = row['Text Embeddings']
 
 	return utterances
 
