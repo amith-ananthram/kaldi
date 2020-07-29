@@ -78,9 +78,6 @@ fi
 
 if [ $stage -le 6 ]; then
 	echo "Calculating EER, DET, accuracy and F1..."
-	python lda-plda-emotion/calculate_det_accuracy_and_f1.py --variant $variant --trials-file $work_dir/trials --score-file $work_dir/scores -o $work_dir | tee -a $work_dir/results.txt
-
 	mkdir -p $output_dir/$variant
-	cp $work_dir/results.txt $output_dir/$variant/${variant}_results.txt
-	cp $work_dir/$variant* $output_dir/$variant
+	python lda-plda-emotion/calculate_det_accuracy_and_f1.py --variant $variant --trials-file $work_dir/trials --score-file $work_dir/scores -o $output_dir/$variant | tee -a $output_dir/$variant/results.txt
 fi

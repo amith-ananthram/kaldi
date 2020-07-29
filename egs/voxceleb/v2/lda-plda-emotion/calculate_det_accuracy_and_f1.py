@@ -1,10 +1,10 @@
 import csv
-
+import pickle
 import numpy as np
 from optparse import OptionParser
 from collections import defaultdict
 
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, confusion_matrix
 from pyannote.metrics.plot.binary_classification import plot_det_curve
 
 def get_label(utterance):
@@ -82,8 +82,21 @@ def main():
 		max_avg_score_labels.append(get_emotion_with_max_avg_score(scores_by_emotion)[0])
 
 	print('Classification using max score:')
+	max_score_classification_report = classification_report(real_labels, max_score_labels, output_dict=True)
+	with open('%s/max_score_classification_report.pkl' % options.output_dir, 'wb') as f:
+		pickle.dump(max_score_classification_report, f)
+	max_score_confusion_matrix = confusion_matrix(real_labels, max_score_labels)
+	with open('%s/max_score_confusion_matrix.pkl' % options.output_dir, 'wb') as f:
+		pickle.dump(max_score_confusion_matrix, f)
 	print(classification_report(real_labels, max_score_labels))
+
 	print('Classification using max avg score:')
+	avg_score_classification_report = classification_report(real_labels, max_avg_score_labels, output_dict=True)
+	with open('%s/avg_score_classification_report.pkl' % options.output_dir, 'wb') as f:
+		pickle.dump(avg_score_classification_report, f)
+	avg_score_confusion_matrix = confusion_matrix(real_labels, max_avg_score_labels)
+	with open('%s/avg_score_confusion_matrix.pkl' % options.output_dir, 'wb') as f:
+		pickle.dump(avg_score_confusion_matrix, f)
 	print(classification_report(real_labels, max_avg_score_labels))
 
 if __name__ == "__main__":
