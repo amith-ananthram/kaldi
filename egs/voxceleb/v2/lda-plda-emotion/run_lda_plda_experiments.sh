@@ -1,3 +1,5 @@
+set -e
+
 # model 16, layer 6, speech only
 # lda-plda-emotion/lda_plda.sh \
 # 	--variant "00000" \

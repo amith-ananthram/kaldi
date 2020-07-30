@@ -1,9 +1,10 @@
 import sys
 import random
 import pickle
+import numpy as np
 from kaldiio import ReadHelper, WriteHelper
 
-from collections import defaultdict
+from collections import Counter, defaultdict
 
 CREMA_D_PATH = 'nnet-emotion/cremad/outputs/data/all_cremad/'
 MELD_PATH = 'nnet-emotion/meld/outputs/data/all_meld/'
@@ -40,9 +41,9 @@ def get_cremad_utterances(speech_dir, text_dir):
 
 	if text_dir != 'none':
 		embeddings_by_emotion = defaultdict(list)
-		with open('%s/dd_embeddings.pkl', 'rb') as f:
+		with open('%s/dd_embedding.pkl' % text_dir, 'rb') as f:
 			dd = pickle.load(f)
-			for _, row in iemocap.iterrows():
+			for _, row in dd.iterrows():
 				utterance_id = row['ID']
 				emotion = utterance_id.split('-')[0]
 				embeddings_by_emotion[emotion].append(row['Text Embeddings'])
@@ -50,7 +51,7 @@ def get_cremad_utterances(speech_dir, text_dir):
 		for utterance_id, utterance in utterances.items():
 			emotion = utterance['emotion']
 			random.seed(utterance_id)
-			random_text_vector = random.sample(embeddings_by_emotion[emotion])
+			random_text_vector = random.choice(embeddings_by_emotion[emotion])
 			utterance['text'] = random_text_vector
 	return utterances
 
@@ -75,7 +76,7 @@ def get_meld_utterances(speech_dir, text_dir):
 				utterances[utterance_id]['speech'] = speech_vector
 
 	if text_dir != 'none':
-		with open('%s/meld_embeddings.pkl', 'rb') as f:
+		with open('%s/meld_embedding.pkl' % text_dir, 'rb') as f:
 			meld = pickle.load(f)
 			for _, row in meld.iterrows():
 				utterance_id, text_embeddings = row['ID'], row['Text Embeddings']
@@ -117,7 +118,7 @@ def get_iemocap_utterances(speech_dir, text_dir, subset):
 				utterances[utterance_id]['speech'] = speech_vector
 
 	if text_dir != 'none':
-		with open('%s/iemocap_embeddings.pkl', 'rb') as f:
+		with open('%s/iemocap_embedding.pkl' % text_dir, 'rb') as f:
 			iemocap = pickle.load(f)
 			for _, row in iemocap.iterrows():
 				utterance_id = row['ID']
@@ -151,7 +152,7 @@ def get_utterances(speech_dir, text_dir, corpora):
 	return utterances
 
 
-def write_output_files(prefix, utterances, output_dir):
+def write_output_files(prefix, utterances, has_speech, has_text, output_dir):
 	# utt2spk -- index
 	# spk2utt -- index
 	# xvector.scp, xvector.ark
@@ -172,27 +173,34 @@ def write_output_files(prefix, utterances, output_dir):
 		for speaker in sorted(spk2utt.keys()):
 			f.write("%s %s\n" % (speaker, ' '.join(spk2utt[speaker])))
 
+	dimensions = Counter()
 	with WriteHelper(
 		'ark,scp:%s/%s_xvector.ark,%s/%s_xvector.scp' % (
 			output_dir, prefix, output_dir, prefix)) as writer:
 		for utterance_id in sorted(utterances.keys()):
 			utterance = utterances[utterance_id]
-			if 'text' not in utterance:
+			if has_speech and not has_text:
 				if 'speech' not in utterance:
 					print("Missing speech vector: %s" % utterance_id)
 					continue
 				feature_vector = utterance['speech']
-			elif 'speech' not in utterance:
+			elif has_text and not has_speech:
 				feature_vector = utterance['text']
 			else:
-				feature_vector = np.concatenate(
+				if 'speech' not in utterance:
+					print("Missing speech vector: %s" % utterance_id)
+					continue
+				feature_vector = np.concatenate((
 					utterances[utterance_id]['speech'],
 					utterances[utterance_id]['text']
-				)
+				))
+			dimensions[feature_vector.shape] += 1
 			writer(
 				utterance_id, 
 				feature_vector
 			)
+	print("%s dimensions" % prefix)
+	print(dimensions)
 
 def write_trials_file(train_utterances, test_utterances, output_dir):
 	num_target = 0
@@ -243,6 +251,6 @@ print("Test corpora: %s" % test_corpora)
 train_utterances = get_utterances(speech_dir, text_dir, train_corpora)
 test_utterances = get_utterances(speech_dir, text_dir, test_corpora)
 
-write_output_files('train', train_utterances, output_dir)
-write_output_files('test', test_utterances, output_dir)
+write_output_files('train', train_utterances, speech_dir != 'none', text_dir != 'none', output_dir)
+write_output_files('test', test_utterances, speech_dir != 'none', text_dir != 'none', output_dir)
 write_trials_file(train_utterances, test_utterances, output_dir)
