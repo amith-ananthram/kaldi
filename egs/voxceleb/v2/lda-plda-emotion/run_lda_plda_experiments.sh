@@ -341,43 +341,43 @@ set -e
 # 	--train_corpora cremad,iemocap5 \
 # 	--output_dir lda_output
 
-# trained on DD only
-lda-plda-emotion/lda_plda.sh \
-	--variant "00054" \
-	--speech_dir none \
-	--text_dir text_embeddings/Restructured/DailyDialog \
-	--train_corpora cremad \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00055" \
-	--speech_dir none \
-	--text_dir text_embeddings/Restructured/DailyDialog \
-	--train_corpora cremad,iemocap1 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00056" \
-	--speech_dir none \
-	--text_dir text_embeddings/Restructured/DailyDialog \
-	--train_corpora cremad,iemocap2 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00057" \
-	--speech_dir none \
-	--text_dir text_embeddings/Restructured/DailyDialog \
-	--train_corpora cremad,iemocap3 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00058" \
-	--speech_dir none \
-	--text_dir text_embeddings/Restructured/DailyDialog \
-	--train_corpora cremad,iemocap4 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00059" \
-	--speech_dir none \
-	--text_dir text_embeddings/Restructured/DailyDialog \
-	--train_corpora cremad,iemocap5 \
-	--output_dir lda_output
+# # trained on DD only
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00054" \
+# 	--speech_dir none \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00055" \
+# 	--speech_dir none \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad,iemocap1 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00056" \
+# 	--speech_dir none \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad,iemocap2 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00057" \
+# 	--speech_dir none \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad,iemocap3 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00058" \
+# 	--speech_dir none \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad,iemocap4 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00059" \
+# 	--speech_dir none \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad,iemocap5 \
+# 	--output_dir lda_output
 
 # trained on DD+MELD only
 lda-plda-emotion/lda_plda.sh \
@@ -417,142 +417,142 @@ lda-plda-emotion/lda_plda.sh \
 	--train_corpora cremad,iemocap5 \
 	--output_dir lda_output
 
-# trained on DD + IEMOCAP1
-lda-plda-emotion/lda_plda.sh \
-	--variant "00066" \
-	--speech_dir none \
-	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_0 \
-	--train_corpora cremad \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00067" \
-	--speech_dir none \
-	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_0 \
-	--train_corpora cremad,iemocap1 \
-	--output_dir lda_output
+# # trained on DD + IEMOCAP1
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00066" \
+# 	--speech_dir none \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_0 \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00067" \
+# 	--speech_dir none \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_0 \
+# 	--train_corpora cremad,iemocap1 \
+# 	--output_dir lda_output
 
-# trained on DD + IEMOCAP2
-lda-plda-emotion/lda_plda.sh \
-	--variant "00068" \
-	--speech_dir none \
-	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_1 \
-	--train_corpora cremad \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00069" \
-	--speech_dir none \
-	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_1 \
-	--train_corpora cremad,iemocap2 \
-	--output_dir lda_output
+# # trained on DD + IEMOCAP2
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00068" \
+# 	--speech_dir none \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_1 \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00069" \
+# 	--speech_dir none \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_1 \
+# 	--train_corpora cremad,iemocap2 \
+# 	--output_dir lda_output
 
-# trained on DD + IEMOCAP3
-lda-plda-emotion/lda_plda.sh \
-	--variant "00070" \
-	--speech_dir none \
-	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_2 \
-	--train_corpora cremad \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00071" \
-	--speech_dir none \
-	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_2 \
-	--train_corpora cremad,iemocap3 \
-	--output_dir lda_output
+# # trained on DD + IEMOCAP3
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00070" \
+# 	--speech_dir none \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_2 \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00071" \
+# 	--speech_dir none \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_2 \
+# 	--train_corpora cremad,iemocap3 \
+# 	--output_dir lda_output
 
-# trained on DD + IEMOCAP4
-lda-plda-emotion/lda_plda.sh \
-	--variant "00072" \
-	--speech_dir none \
-	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_3 \
-	--train_corpora cremad \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00073" \
-	--speech_dir none \
-	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_3 \
-	--train_corpora cremad,iemocap4 \
-	--output_dir lda_output
+# # trained on DD + IEMOCAP4
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00072" \
+# 	--speech_dir none \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_3 \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00073" \
+# 	--speech_dir none \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_3 \
+# 	--train_corpora cremad,iemocap4 \
+# 	--output_dir lda_output
 
-# trained on DD + IEMOCAP5
-lda-plda-emotion/lda_plda.sh \
-	--variant "00074" \
-	--speech_dir none \
-	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_4 \
-	--train_corpora cremad \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00075" \
-	--speech_dir none \
-	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_4 \
-	--train_corpora cremad,iemocap5 \
-	--output_dir lda_output
+# # trained on DD + IEMOCAP5
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00074" \
+# 	--speech_dir none \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_4 \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00075" \
+# 	--speech_dir none \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_4 \
+# 	--train_corpora cremad,iemocap5 \
+# 	--output_dir lda_output
 
-# trained on DD + MELD + IEMOCAP1
-lda-plda-emotion/lda_plda.sh \
-	--variant "00076" \
-	--speech_dir none \
-	--text_dir text_embeddings/Restructured/DailyDialog+MELD+IEMOCAP_0 \
-	--train_corpora cremad \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00077" \
-	--speech_dir none \
-	--text_dir text_embeddings/Restructured/DailyDialog+MELD+IEMOCAP_0 \
-	--train_corpora cremad,iemocap1 \
-	--output_dir lda_output
+# # trained on DD + MELD + IEMOCAP1
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00076" \
+# 	--speech_dir none \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+MELD+IEMOCAP_0 \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00077" \
+# 	--speech_dir none \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+MELD+IEMOCAP_0 \
+# 	--train_corpora cremad,iemocap1 \
+# 	--output_dir lda_output
 
-# trained on DD + MELD + IEMOCAP2
-lda-plda-emotion/lda_plda.sh \
-	--variant "00078" \
-	--speech_dir none \
-	--text_dir text_embeddings/Restructured/DailyDialog+MELD+IEMOCAP_1 \
-	--train_corpora cremad \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00079" \
-	--speech_dir none \
-	--text_dir text_embeddings/Restructured/DailyDialog+MELD+IEMOCAP_1 \
-	--train_corpora cremad,iemocap2 \
-	--output_dir lda_output
+# # trained on DD + MELD + IEMOCAP2
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00078" \
+# 	--speech_dir none \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+MELD+IEMOCAP_1 \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00079" \
+# 	--speech_dir none \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+MELD+IEMOCAP_1 \
+# 	--train_corpora cremad,iemocap2 \
+# 	--output_dir lda_output
 
-# trained on DD + MELD + IEMOCAP3
-lda-plda-emotion/lda_plda.sh \
-	--variant "00080" \
-	--speech_dir none \
-	--text_dir text_embeddings/Restructured/DailyDialog+MELD+IEMOCAP_2 \
-	--train_corpora cremad \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00081" \
-	--speech_dir none \
-	--text_dir text_embeddings/Restructured/DailyDialog+MELD+IEMOCAP_2 \
-	--train_corpora cremad,iemocap3 \
-	--output_dir lda_output
+# # trained on DD + MELD + IEMOCAP3
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00080" \
+# 	--speech_dir none \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+MELD+IEMOCAP_2 \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00081" \
+# 	--speech_dir none \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+MELD+IEMOCAP_2 \
+# 	--train_corpora cremad,iemocap3 \
+# 	--output_dir lda_output
 
-# trained on DD + MELD + IEMOCAP4
-lda-plda-emotion/lda_plda.sh \
-	--variant "00082" \
-	--speech_dir none \
-	--text_dir text_embeddings/Restructured/DailyDialog+MELD+IEMOCAP_3 \
-	--train_corpora cremad \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00083" \
-	--speech_dir none \
-	--text_dir text_embeddings/Restructured/DailyDialog+MELD+IEMOCAP_3 \
-	--train_corpora cremad,iemocap4 \
-	--output_dir lda_output
+# # trained on DD + MELD + IEMOCAP4
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00082" \
+# 	--speech_dir none \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+MELD+IEMOCAP_3 \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00083" \
+# 	--speech_dir none \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+MELD+IEMOCAP_3 \
+# 	--train_corpora cremad,iemocap4 \
+# 	--output_dir lda_output
 
-# trained on DD + MELD + IEMOCAP5
-lda-plda-emotion/lda_plda.sh \
-	--variant "00084" \
-	--speech_dir none \
-	--text_dir text_embeddings/Restructured/DailyDialog+MELD+IEMOCAP_4 \
-	--train_corpora cremad \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00085" \
-	--speech_dir none \
-	--text_dir text_embeddings/Restructured/DailyDialog+MELD+IEMOCAP_4 \
-	--train_corpora cremad,iemocap5 \
-	--output_dir lda_output
+# # trained on DD + MELD + IEMOCAP5
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00084" \
+# 	--speech_dir none \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+MELD+IEMOCAP_4 \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00085" \
+# 	--speech_dir none \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+MELD+IEMOCAP_4 \
+# 	--train_corpora cremad,iemocap5 \
+# 	--output_dir lda_output
