@@ -25,7 +25,7 @@ num_layers=7
 first_six_lr=0
 epochs=6
 dropout=placeholder
-iemocap_to_exclude=placeholder
+iemocap_to_exclude=-1
 
 . ./utils/parse_options.sh
 
@@ -177,13 +177,13 @@ if [ $stage -eq 7 ]; then
 fi
 
 if [ $stage -eq 8 ]; then 
-  if [ $iemocap_to_exclude -ne "placeholder" ]; then 
+  if [ $iemocap_to_exclude -ne -1 ]; then 
     sessions=''
     for session in 1 2 3 4 5
     do
       if [ $session -ne $iemocap_to_exclude ]; then 
-        sessions='$sessions nnet-emotion/iemocap/session${session}'
-      done
+        sessions="$sessions nnet-emotion/iemocap/session${session}"
+      fi
     done
 
     echo "stage $stage (adding 4/5 IEMOCAP: %sessions)"
