@@ -31,7 +31,7 @@ work_dir="lda_plda_work"
 
 . parse_options.sh || exit 1;
 
-echo "Starting from stage $stage..."
+echo "Starting $variant from stage $stage..."
 
 if [ $stage -le 0 ]; then
 	rm -rf $work_dir
