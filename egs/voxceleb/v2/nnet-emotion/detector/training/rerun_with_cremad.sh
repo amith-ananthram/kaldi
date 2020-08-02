@@ -25,6 +25,7 @@ num_layers=7
 first_six_lr=0
 epochs=6
 dropout=placeholder
+iemocap_to_exclude=placeholder
 
 . ./utils/parse_options.sh
 
@@ -175,8 +176,29 @@ if [ $stage -eq 7 ]; then
   echo "end stage $stage"
 fi
 
+if [ $stage -eq 8 ]; then 
+  if [ $iemocap_to_exclude -ne "placeholder" ]; then 
+    sessions=''
+    for session in 1 2 3 4 5
+    do
+      if [ $session -ne $iemocap_to_exclude ]; then 
+        sessions='$sessions nnet-emotion/iemocap/session${session}'
+      done
+    done
+
+    echo "stage $stage (adding 4/5 IEMOCAP: %sessions)"
+
+    utils/combine_data.sh ${data_dir}/with_iemocap ${data_dir}/train_combined $sessions
+    rm -rf ${data_dir}/train_combined
+    cp -r ${data_dir}/with_iemocap ${data_dir}/train_combined
+    rm -rf ${data_dir}/with_iemocap
+  else
+    echo "not including any IEMOCAP..."
+  fi
+fi
+
 # Now we prepare the features to generate examples for xvector training.
-if [ $stage -eq 8 ]; then
+if [ $stage -eq 9 ]; then
   echo "stage $stage (removing silence if $remove_sil=True): start"
   # This script applies CMVN and removes nonspeech frames.  Note that this is somewhat
   # wasteful, as it roughly doubles the amount of training data on disk.  After
@@ -194,7 +216,7 @@ fi
 
 # ./run.sh does a bunch of filtering of utterances by speakers
 # that are too infrequent -- we skip that here speaker=emotion label 
-if [ $stage -eq 9 ]; then
+if [ $stage -eq 10 ]; then
   echo "stage $stage (filtering utterances that are < $min_num_frames): start"
   # Now, we need to remove features that are too short after removing silence
   # frames.  We want atleast $min_num_frames per utterance. (note this is smaller than in v2/run.sh)
@@ -209,7 +231,7 @@ if [ $stage -eq 9 ]; then
 fi
 
 # safe to rerun, cleans up the directory
-if [ $stage -eq 10 ]; then
+if [ $stage -eq 11 ]; then
   echo "stage $stage (getting training examples): start"
 
   rm -rf $nnet_dir/egs
@@ -229,7 +251,7 @@ fi
 
 dropout_schedule=$dropout
 srand=123
-if [ $stage -eq 11 ]; then
+if [ $stage -eq 12 ]; then
   steps/nnet3/train_raw_dnn.py --stage=$train_stage \
     --cmd="$train_cmd" \
     --trainer.input-model "${MODEL_OUTPUT_DIR}/${MODIFIED_REFERENCE_MODEL}" \
