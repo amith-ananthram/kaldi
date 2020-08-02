@@ -11,6 +11,7 @@ corpus_path=placeholder
 features_path=placeholder
 
 chunk_size=placeholder
+test_set=all_iemocap
 
 . ./utils/parse_options.sh
 
@@ -54,7 +55,7 @@ fi
 if [ $stage -eq 2 ]; then
 	echo "Stage $stage: generating predictions for specified model"
 	mkdir -p "${model_path}/predictions"
-	nnet3-xvector-compute-batched --use-gpu=yes --chunk-size=$chunk_size "${model_path}/final.raw" scp:${features_path}/all_iemocap/feats.scp ark:${model_path}/predictions/iemocap_predictions.ark
+	nnet3-xvector-compute-batched --use-gpu=yes --chunk-size=$chunk_size "${model_path}/final.raw" scp:${features_path}/$test_set/feats.scp ark:${model_path}/predictions/iemocap_predictions.ark
 	echo "Stage $stage: end"
 fi
 
@@ -63,7 +64,7 @@ if [ $stage -eq 3 ]; then
 	echo "Stage $stage: generating scores for specified model"
 	mkdir -p "${model_path}/scores"
 	nnet-emotion/detector/scoring/score_emotion_prediction_results.py \
-		"${features_path}/all_iemocap/utt2spk" \
+		"${features_path}/$test_set/utt2spk" \
 		"${model_path}/predictions/iemocap_predictions.ark" \
 		"${model_path}/scores/iemocap_scores.txt"
 	echo "Stage $stage: end"
