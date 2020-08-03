@@ -13,6 +13,7 @@ output_base_dir=placeholder
 . ./utils/parse_options.sh
 
 start_layer=6
+chunk_size=-1
 min_chunk_size=25
 max_chunk_size=10000
 
@@ -31,7 +32,7 @@ do
 
 	out_dir="$output_base_dir/$layer"
 	mkdir $out_dir
-	sid/nnet3/xvector/extract_xvectors.sh --cmd "$train_cmd --mem 4G" --nj $nj --use_gpu $use_gpu \
+	sid/nnet3/xvector/extract_xvectors.sh --cmd "$train_cmd --mem 4G" --nj $nj --use_gpu $use_gpu --chunk_size $chunk_size \
 		$work_dir $corpus_dir $out_dir
 
 	# clean up (so we hard fail if we run into any issues on the next iteration)
