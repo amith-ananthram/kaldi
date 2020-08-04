@@ -831,356 +831,420 @@ set -e
 # 	--train_corpora cremad,iemocap1 \
 # 	--output_dir lda_output
 
-# model 23, layer 6, speech only (chunk size = 150)
+# # model 23, layer 6, speech only (chunk size = 150)
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00128" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/6/ \
+# 	--text_dir none \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00129" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/6/ \
+# 	--text_dir none \
+# 	--train_corpora cremad,iemocap1 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00130" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/6/ \
+# 	--text_dir none \
+# 	--train_corpora cremad,iemocap2 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00131" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/6/ \
+# 	--text_dir none \
+# 	--train_corpora cremad,iemocap3 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00132" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/6/ \
+# 	--text_dir none \
+# 	--train_corpora cremad,iemocap4 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00133" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/6/ \
+# 	--text_dir none \
+# 	--train_corpora cremad,iemocap5 \
+# 	--output_dir lda_output
+
+# # model 23, layer 7, speech only (chunk size = 150)
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00134" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
+# 	--text_dir none \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00135" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
+# 	--text_dir none \
+# 	--train_corpora cremad,iemocap1 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00136" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
+# 	--text_dir none \
+# 	--train_corpora cremad,iemocap2 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00137" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
+# 	--text_dir none \
+# 	--train_corpora cremad,iemocap3 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00138" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
+# 	--text_dir none \
+# 	--train_corpora cremad,iemocap4 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00139" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
+# 	--text_dir none \
+# 	--train_corpora cremad,iemocap5 \
+# 	--output_dir lda_output
+
+# # model 23, layer 8, speech only (chunk size = 150)
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00140" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/8/ \
+# 	--text_dir none \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00141" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/8/ \
+# 	--text_dir none \
+# 	--train_corpora cremad,iemocap1 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00142" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/8/ \
+# 	--text_dir none \
+# 	--train_corpora cremad,iemocap2 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00143" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/8/ \
+# 	--text_dir none \
+# 	--train_corpora cremad,iemocap3 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00144" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/8/ \
+# 	--text_dir none \
+# 	--train_corpora cremad,iemocap4 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00145" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/8/ \
+# 	--text_dir none \
+# 	--train_corpora cremad,iemocap5 \
+# 	--output_dir lda_output
+
+# # model 27, layer 6, speech only (chunk size = 150)
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00146" \
+# 	--speech_dir models/cremad/27/xvectors-fixed-chunk/6/ \
+# 	--text_dir none \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00147" \
+# 	--speech_dir models/cremad/27/xvectors-fixed-chunk/6/ \
+# 	--text_dir none \
+# 	--train_corpora cremad,iemocap1 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00148" \
+# 	--speech_dir models/cremad/27/xvectors-fixed-chunk/6/ \
+# 	--text_dir none \
+# 	--train_corpora cremad,iemocap2 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00149" \
+# 	--speech_dir models/cremad/27/xvectors-fixed-chunk/6/ \
+# 	--text_dir none \
+# 	--train_corpora cremad,iemocap3 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00150" \
+# 	--speech_dir models/cremad/27/xvectors-fixed-chunk/6/ \
+# 	--text_dir none \
+# 	--train_corpora cremad,iemocap4 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00151" \
+# 	--speech_dir models/cremad/27/xvectors-fixed-chunk/6/ \
+# 	--text_dir none \
+# 	--train_corpora cremad,iemocap5 \
+# 	--output_dir lda_output
+
+# # model 27, layer 7, speech only (chunk size = 150)
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00152" \
+# 	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
+# 	--text_dir none \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00153" \
+# 	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
+# 	--text_dir none \
+# 	--train_corpora cremad,iemocap1 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00154" \
+# 	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
+# 	--text_dir none \
+# 	--train_corpora cremad,iemocap2 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00155" \
+# 	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
+# 	--text_dir none \
+# 	--train_corpora cremad,iemocap3 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00156" \
+# 	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
+# 	--text_dir none \
+# 	--train_corpora cremad,iemocap4 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00157" \
+# 	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
+# 	--text_dir none \
+# 	--train_corpora cremad,iemocap5 \
+# 	--output_dir lda_output
+
+# # model 23, layer 7 (chunk size = 150), DD
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00158" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00159" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad,iemocap1 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00160" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad,iemocap2 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00161" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad,iemocap3 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00162" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad,iemocap4 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00163" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad,iemocap5 \
+# 	--output_dir lda_output
+
+# # model 23, layer 7 (chunk size = 150), DD + IEMOCAP subset
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00164" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_0 \
+# 	--train_corpora cremad,iemocap1 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00165" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_1 \
+# 	--train_corpora cremad,iemocap2 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00166" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_2 \
+# 	--train_corpora cremad,iemocap3 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00167" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_3 \
+# 	--train_corpora cremad,iemocap4 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00168" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_4 \
+# 	--train_corpora cremad,iemocap5 \
+# 	--output_dir lda_output
+
+# # model 27, layer 7 (chunk size = 150), DD
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00169" \
+# 	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00170" \
+# 	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad,iemocap1 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00171" \
+# 	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad,iemocap2 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00172" \
+# 	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad,iemocap3 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00173" \
+# 	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad,iemocap4 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00174" \
+# 	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad,iemocap5 \
+# 	--output_dir lda_output
+
+# # model 27, layer 7 (chunk size = 150), DD + IEMOCAP subset
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00175" \
+# 	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_0 \
+# 	--train_corpora cremad,iemocap1 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00176" \
+# 	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_1 \
+# 	--train_corpora cremad,iemocap2 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00177" \
+# 	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_2 \
+# 	--train_corpora cremad,iemocap3 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00178" \
+# 	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_3 \
+# 	--train_corpora cremad,iemocap4 \
+# 	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00179" \
+# 	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_4 \
+# 	--train_corpora cremad,iemocap5 \
+# 	--output_dir lda_output
+
+# # model 23, layer 6 (chunk size = 150), DD
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00180" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/6/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
+
+# # model 23, layer 8 (chunk size = 150), DD
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00181" \
+# 	--speech_dir models/cremad/23/xvectors-fixed-chunk/8/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
+
+# # model 27, layer 6 (chunk size = 150), DD
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00182" \
+# 	--speech_dir models/cremad/27/xvectors-fixed-chunk/6/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
+
+# model 34 (chunk size = 150) (trained on 4/5 IEMOCAP -- not IEMOCAP1)
 lda-plda-emotion/lda_plda.sh \
-	--variant "00128" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/6/ \
-	--text_dir none \
-	--train_corpora cremad \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00129" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/6/ \
+	--variant "00183" \
+	--speech_dir models/cremad/34/xvectors-fixed-chunk/6/ \
 	--text_dir none \
 	--train_corpora cremad,iemocap1 \
 	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00130" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/6/ \
-	--text_dir none \
-	--train_corpora cremad,iemocap2 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00131" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/6/ \
-	--text_dir none \
-	--train_corpora cremad,iemocap3 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00132" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/6/ \
-	--text_dir none \
-	--train_corpora cremad,iemocap4 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00133" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/6/ \
-	--text_dir none \
-	--train_corpora cremad,iemocap5 \
-	--output_dir lda_output
 
-# model 23, layer 7, speech only (chunk size = 150)
 lda-plda-emotion/lda_plda.sh \
-	--variant "00134" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
-	--text_dir none \
-	--train_corpora cremad \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00135" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
+	--variant "00184" \
+	--speech_dir models/cremad/34/xvectors-fixed-chunk/7/ \
 	--text_dir none \
 	--train_corpora cremad,iemocap1 \
 	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00136" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
-	--text_dir none \
-	--train_corpora cremad,iemocap2 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00137" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
-	--text_dir none \
-	--train_corpora cremad,iemocap3 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00138" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
-	--text_dir none \
-	--train_corpora cremad,iemocap4 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00139" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
-	--text_dir none \
-	--train_corpora cremad,iemocap5 \
-	--output_dir lda_output
 
-# model 23, layer 8, speech only (chunk size = 150)
 lda-plda-emotion/lda_plda.sh \
-	--variant "00140" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/8/ \
-	--text_dir none \
-	--train_corpora cremad \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00141" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/8/ \
+	--variant "00185" \
+	--speech_dir models/cremad/34/xvectors-fixed-chunk/8/ \
 	--text_dir none \
 	--train_corpora cremad,iemocap1 \
 	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00142" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/8/ \
-	--text_dir none \
-	--train_corpora cremad,iemocap2 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00143" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/8/ \
-	--text_dir none \
-	--train_corpora cremad,iemocap3 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00144" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/8/ \
-	--text_dir none \
-	--train_corpora cremad,iemocap4 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00145" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/8/ \
-	--text_dir none \
-	--train_corpora cremad,iemocap5 \
-	--output_dir lda_output
 
-# model 27, layer 6, speech only (chunk size = 150)
 lda-plda-emotion/lda_plda.sh \
-	--variant "00146" \
-	--speech_dir models/cremad/27/xvectors-fixed-chunk/6/ \
-	--text_dir none \
-	--train_corpora cremad \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00147" \
-	--speech_dir models/cremad/27/xvectors-fixed-chunk/6/ \
-	--text_dir none \
-	--train_corpora cremad,iemocap1 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00148" \
-	--speech_dir models/cremad/27/xvectors-fixed-chunk/6/ \
-	--text_dir none \
-	--train_corpora cremad,iemocap2 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00149" \
-	--speech_dir models/cremad/27/xvectors-fixed-chunk/6/ \
-	--text_dir none \
-	--train_corpora cremad,iemocap3 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00150" \
-	--speech_dir models/cremad/27/xvectors-fixed-chunk/6/ \
-	--text_dir none \
-	--train_corpora cremad,iemocap4 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00151" \
-	--speech_dir models/cremad/27/xvectors-fixed-chunk/6/ \
-	--text_dir none \
-	--train_corpora cremad,iemocap5 \
-	--output_dir lda_output
-
-# model 27, layer 7, speech only (chunk size = 150)
-lda-plda-emotion/lda_plda.sh \
-	--variant "00152" \
-	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
-	--text_dir none \
-	--train_corpora cremad \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00153" \
-	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
-	--text_dir none \
-	--train_corpora cremad,iemocap1 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00154" \
-	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
-	--text_dir none \
-	--train_corpora cremad,iemocap2 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00155" \
-	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
-	--text_dir none \
-	--train_corpora cremad,iemocap3 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00156" \
-	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
-	--text_dir none \
-	--train_corpora cremad,iemocap4 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00157" \
-	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
-	--text_dir none \
-	--train_corpora cremad,iemocap5 \
-	--output_dir lda_output
-
-# model 23, layer 7 (chunk size = 150), DD
-lda-plda-emotion/lda_plda.sh \
-	--variant "00158" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
-	--text_dir text_embeddings/Restructured/DailyDialog \
-	--train_corpora cremad \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00159" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
+	--variant "00186" \
+	--speech_dir models/cremad/34/xvectors-fixed-chunk/6/ \
 	--text_dir text_embeddings/Restructured/DailyDialog \
 	--train_corpora cremad,iemocap1 \
 	--output_dir lda_output
+
 lda-plda-emotion/lda_plda.sh \
-	--variant "00160" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
+	--variant "00187" \
+	--speech_dir models/cremad/34/xvectors-fixed-chunk/7/ \
 	--text_dir text_embeddings/Restructured/DailyDialog \
-	--train_corpora cremad,iemocap2 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00161" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
-	--text_dir text_embeddings/Restructured/DailyDialog \
-	--train_corpora cremad,iemocap3 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00162" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
-	--text_dir text_embeddings/Restructured/DailyDialog \
-	--train_corpora cremad,iemocap4 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00163" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
-	--text_dir text_embeddings/Restructured/DailyDialog \
-	--train_corpora cremad,iemocap5 \
+	--train_corpora cremad,iemocap1 \
 	--output_dir lda_output
 
-# model 23, layer 7 (chunk size = 150), DD + IEMOCAP subset
 lda-plda-emotion/lda_plda.sh \
-	--variant "00164" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
+	--variant "00188" \
+	--speech_dir models/cremad/34/xvectors-fixed-chunk/8/ \
+	--text_dir text_embeddings/Restructured/DailyDialog \
+	--train_corpora cremad,iemocap1 \
+	--output_dir lda_output
+
+lda-plda-emotion/lda_plda.sh \
+	--variant "00189" \
+	--speech_dir models/cremad/34/xvectors-fixed-chunk/6/ \
 	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_0 \
 	--train_corpora cremad,iemocap1 \
 	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00165" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
-	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_1 \
-	--train_corpora cremad,iemocap2 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00166" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
-	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_2 \
-	--train_corpora cremad,iemocap3 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00167" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
-	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_3 \
-	--train_corpora cremad,iemocap4 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00168" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/7/ \
-	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_4 \
-	--train_corpora cremad,iemocap5 \
-	--output_dir lda_output
 
-# model 27, layer 7 (chunk size = 150), DD
 lda-plda-emotion/lda_plda.sh \
-	--variant "00169" \
-	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
-	--text_dir text_embeddings/Restructured/DailyDialog \
-	--train_corpora cremad \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00170" \
-	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
-	--text_dir text_embeddings/Restructured/DailyDialog \
-	--train_corpora cremad,iemocap1 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00171" \
-	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
-	--text_dir text_embeddings/Restructured/DailyDialog \
-	--train_corpora cremad,iemocap2 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00172" \
-	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
-	--text_dir text_embeddings/Restructured/DailyDialog \
-	--train_corpora cremad,iemocap3 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00173" \
-	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
-	--text_dir text_embeddings/Restructured/DailyDialog \
-	--train_corpora cremad,iemocap4 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00174" \
-	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
-	--text_dir text_embeddings/Restructured/DailyDialog \
-	--train_corpora cremad,iemocap5 \
-	--output_dir lda_output
-
-# model 27, layer 7 (chunk size = 150), DD + IEMOCAP subset
-lda-plda-emotion/lda_plda.sh \
-	--variant "00175" \
-	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
+	--variant "00190" \
+	--speech_dir models/cremad/34/xvectors-fixed-chunk/7/ \
 	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_0 \
 	--train_corpora cremad,iemocap1 \
 	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00176" \
-	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
-	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_1 \
-	--train_corpora cremad,iemocap2 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00177" \
-	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
-	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_2 \
-	--train_corpora cremad,iemocap3 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00178" \
-	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
-	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_3 \
-	--train_corpora cremad,iemocap4 \
-	--output_dir lda_output
-lda-plda-emotion/lda_plda.sh \
-	--variant "00179" \
-	--speech_dir models/cremad/27/xvectors-fixed-chunk/7/ \
-	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_4 \
-	--train_corpora cremad,iemocap5 \
-	--output_dir lda_output
 
-# model 23, layer 6 (chunk size = 150), DD
 lda-plda-emotion/lda_plda.sh \
-	--variant "00180" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/6/ \
-	--text_dir text_embeddings/Restructured/DailyDialog \
-	--train_corpora cremad \
-	--output_dir lda_output
-
-# model 23, layer 8 (chunk size = 150), DD
-lda-plda-emotion/lda_plda.sh \
-	--variant "00181" \
-	--speech_dir models/cremad/23/xvectors-fixed-chunk/8/ \
-	--text_dir text_embeddings/Restructured/DailyDialog \
-	--train_corpora cremad \
-	--output_dir lda_output
-
-# model 27, layer 6 (chunk size = 150), DD
-lda-plda-emotion/lda_plda.sh \
-	--variant "00182" \
-	--speech_dir models/cremad/27/xvectors-fixed-chunk/6/ \
-	--text_dir text_embeddings/Restructured/DailyDialog \
-	--train_corpora cremad \
+	--variant "00191" \
+	--speech_dir models/cremad/34/xvectors-fixed-chunk/8/ \
+	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_0 \
+	--train_corpora cremad,iemocap1 \
 	--output_dir lda_output
