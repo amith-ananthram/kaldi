@@ -26,6 +26,7 @@ first_six_lr=0
 epochs=6
 dropout=placeholder
 iemocap_to_exclude=-1
+num_noisy_samples=-1
 
 . ./utils/parse_options.sh
 
@@ -62,16 +63,31 @@ if [ $stage -eq 2 ]; then
   echo "stage 2 (preparing CremaD for Kaldi -- utt2spk, spk2utt): end"
 fi
 
+if [ $stage -eq 3 ]; then 
+  echo "stage 3 (extracting MFCCs and VAD): start"
+  if $reuse_mfccs; then
+    echo "reusing already extracted MFCCs..."
+    # A little hacky but works!  Just moving the un-augmented CremaD where the rest of the code expects it.
+    rm -rf ${data_dir}/train_combined
+    utils/combine_data.sh ${data_dir}/train_combined ${DATA_OUTPUT_COMBINED_DIR}
+  else
+    rm -rf $mfccdir
+    # Make MFCCs and compute the energy-based VAD for each dataset
+    steps/make_mfcc_pitch.sh --write-utt2num-frames true --mfcc-config conf/mfcc.conf --pitch-config conf/pitch.conf --nj 40 --cmd "$train_cmd" \
+        ${DATA_OUTPUT_COMBINED_DIR} ${root}/exp/make_mfcc $mfccdir
+    utils/fix_data_dir.sh ${DATA_OUTPUT_COMBINED_DIR}
+    sid/compute_vad_decision.sh --nj 40 --cmd "$train_cmd" \
+      ${DATA_OUTPUT_COMBINED_DIR} ${root}/exp/make_vad $vaddir
+    utils/fix_data_dir.sh ${DATA_OUTPUT_COMBINED_DIR}
+  fi 
+  echo "stage 3 (extracting MFCCs and VAD): end"
+fi
+
 if $reuse_mfccs; then
   echo "reusing already extracted MFCCs..."
   rm -rf ${data_dir}/train_combined
-  if $include_noise; then
-    # Combine the clean and augmented CremaD list.  This is now roughly double the size of the original clean list.
-    utils/combine_data.sh ${data_dir}/train_combined ${data_dir}/train_aug_1m ${DATA_OUTPUT_COMBINED_DIR}
-  else 
-    # A little hacky but works!  Just moving the un-augmented CremaD where the rest of the code expects it.
-    utils/combine_data.sh ${data_dir}/train_combined ${DATA_OUTPUT_COMBINED_DIR}
-  fi
+  # A little hacky but works!  Just moving the un-augmented CremaD where the rest of the code expects it.
+  utils/combine_data.sh ${data_dir}/train_combined ${DATA_OUTPUT_COMBINED_DIR}
 else 
   if [ $stage -eq 3 ]; then
     echo "stage 3 (extracting MFCCs and VAD): start"
@@ -85,80 +101,9 @@ else
     utils/fix_data_dir.sh ${DATA_OUTPUT_COMBINED_DIR}
     echo "stage 3 (extracting MFCCs and VAD): end"
   fi
-
-  if $include_noise; then
-    # In this section, we augment the CremaD data with reverberation,
-    # noise, music, and babble, and combine it with the clean data.
-    if [ $stage -eq 4 ]; then
-      echo "stage 4 (augmenting with noise): start"
-      frame_shift=0.01
-      awk -v frame_shift=$frame_shift '{print $1, $2*frame_shift;}' ${DATA_OUTPUT_COMBINED_DIR}/utt2num_frames > ${DATA_OUTPUT_COMBINED_DIR}/reco2dur
-
-      # Make a version with reverberated speech
-      rvb_opts=()
-      rvb_opts+=(--rir-set-parameters "0.5, $NOISE_DIR/simulated_rirs/smallroom/rir_list")
-      rvb_opts+=(--rir-set-parameters "0.5, $NOISE_DIR/simulated_rirs/mediumroom/rir_list")
-
-      # Make a reverberated version of the CremaD list.  Note that we don't add any
-      # additive noise here.
-      steps/data/reverberate_data_dir.py \
-        "${rvb_opts[@]}" \
-        --speech-rvb-probability 1 \
-        --pointsource-noise-addition-probability 0 \
-        --isotropic-noise-addition-probability 0 \
-        --num-replications 1 \
-        --source-sampling-rate 16000 \
-        ${DATA_OUTPUT_COMBINED_DIR} ${data_dir}/train_reverb
-      cp ${DATA_OUTPUT_COMBINED_DIR}/vad.scp ${data_dir}/train_reverb/
-      utils/copy_data_dir.sh --utt-suffix "-reverb" ${data_dir}/train_reverb ${data_dir}/train_reverb.new
-      rm -rf ${data_dir}/train_reverb
-      mv ${data_dir}/train_reverb.new ${data_dir}/train_reverb
-
-      # Prepare the MUSAN corpus, which consists of music, speech, and noise
-      # suitable for augmentation.
-      steps/data/make_musan.sh --sampling-rate 16000 $MUSAN_DIR ${data_dir}
-
-      # Get the duration of the MUSAN recordings.  This will be used by the
-      # script augment_data_dir.py.
-      for name in speech noise music; do
-        utils/data/get_utt2dur.sh ${data_dir}/musan_${name}
-        mv ${data_dir}/musan_${name}/utt2dur ${data_dir}/musan_${name}/reco2dur
-      done
-
-      # Augment with musan_noise
-      steps/data/augment_data_dir.py --utt-suffix "noise" --fg-interval 1 --fg-snrs "15:10:5:0" --fg-noise-dir ${data_dir}/musan_noise ${DATA_OUTPUT_COMBINED_DIR} ${data_dir}/train_noise
-      # Augment with musan_music
-      steps/data/augment_data_dir.py --utt-suffix "music" --bg-snrs "15:10:8:5" --num-bg-noises "1" --bg-noise-dir ${data_dir}/musan_music ${DATA_OUTPUT_COMBINED_DIR} ${data_dir}/train_music
-      # Augment with musan_speech
-      steps/data/augment_data_dir.py --utt-suffix "babble" --bg-snrs "20:17:15:13" --num-bg-noises "3:4:5:6:7" --bg-noise-dir ${data_dir}/musan_speech ${DATA_OUTPUT_COMBINED_DIR} ${data_dir}/train_babble
-
-      # Combine reverb, noise, music, and babble into one directory.
-      utils/combine_data.sh ${data_dir}/train_aug ${data_dir}/train_reverb ${data_dir}/train_noise ${data_dir}/train_music ${data_dir}/train_babble
-      echo "stage 4 (augmenting with noise): end"
-    fi
-
-    if [ $stage -eq 5 ]; then
-      echo "stage 5 (sampling and extracting MFCCs for noise): start"
-      # Take a random subset of the augmentations
-      utils/subset_data_dir.sh ${data_dir}/train_aug 6000 ${data_dir}/train_aug_1m
-
-      utils/fix_data_dir.sh ${data_dir}/train_aug_1m
-
-      # Make MFCCs for the augmented data.  Note that we do not compute a new
-      # vad.scp file here.  Instead, we use the vad.scp from the clean version of
-      # the list.
-      steps/make_mfcc_pitch.sh --mfcc-config conf/mfcc.conf --pitch-config conf/pitch.conf --nj 40 --cmd "$train_cmd" \
-        ${data_dir}/train_aug_1m ${root}/exp/make_mfcc $mfccdir
-
-      # Combine the clean and augmented CremaD list.  This is now roughly
-      # double the size of the original clean list.
-      utils/combine_data.sh ${data_dir}/train_combined ${data_dir}/train_aug_1m ${DATA_OUTPUT_COMBINED_DIR}
-      echo "stage 5 (sampling and extracting MFCCs for noise): end"
-    fi
-  fi
 fi
 
-if [ $stage -eq 6 ]; then 
+if [ $stage -eq 4 ]; then 
   echo "stage $stage (adding MELD): start"
   utils/combine_data.sh ${data_dir}/with_meld ${data_dir}/train_combined nnet-emotion/meld/outputs/data/all_meld
   rm -rf ${data_dir}/train_combined
@@ -167,7 +112,7 @@ if [ $stage -eq 6 ]; then
   echo "end stage $stage"
 fi
 
-if [ $stage -eq 7 ]; then 
+if [ $stage -eq 5 ]; then 
   echo "stage $stage (adding EmoVoxCeleb): start"
   utils/combine_data.sh ${data_dir}/with_emovoxceleb ${data_dir}/train_combined nnet-emotion/emovoxceleb/outputs/data/all_emovoxceleb
   rm -rf ${data_dir}/train_combined
@@ -176,7 +121,7 @@ if [ $stage -eq 7 ]; then
   echo "end stage $stage"
 fi
 
-if [ $stage -eq 8 ]; then 
+if [ $stage -eq 6 ]; then 
   if [ $iemocap_to_exclude -ne -1 ]; then 
     sessions=''
     for session in 1 2 3 4 5
@@ -194,6 +139,82 @@ if [ $stage -eq 8 ]; then
     rm -rf ${data_dir}/with_iemocap
   else
     echo "not including any IEMOCAP..."
+  fi
+fi
+
+if $include_noise; then
+  # In this section, we augment the data with reverberation,
+  # noise, music, and babble, and combine it with the clean data.
+  if [ $stage -eq 7 ]; then
+    echo "stage $stage (augmenting with noise): start"
+    frame_shift=0.01
+    awk -v frame_shift=$frame_shift '{print $1, $2*frame_shift;}' ${data_dir}/train_combined/utt2num_frames > ${data_dir}/train_combined/reco2dur
+
+    # Make a version with reverberated speech
+    rvb_opts=()
+    rvb_opts+=(--rir-set-parameters "0.5, $NOISE_DIR/simulated_rirs/smallroom/rir_list")
+    rvb_opts+=(--rir-set-parameters "0.5, $NOISE_DIR/simulated_rirs/mediumroom/rir_list")
+
+    # Make a reverberated version of the CremaD list.  Note that we don't add any
+    # additive noise here.
+    rm -rf ${data_dir}/train_reverb
+    steps/data/reverberate_data_dir.py \
+      "${rvb_opts[@]}" \
+      --speech-rvb-probability 1 \
+      --pointsource-noise-addition-probability 0 \
+      --isotropic-noise-addition-probability 0 \
+      --num-replications 1 \
+      --source-sampling-rate 16000 \
+      ${data_dir}/train_combined ${data_dir}/train_reverb
+    cp ${data_dir}/train_combined/vad.scp ${data_dir}/train_reverb/
+    utils/copy_data_dir.sh --utt-suffix "-reverb" ${data_dir}/train_reverb ${data_dir}/train_reverb.new
+    rm -rf ${data_dir}/train_reverb
+    mv ${data_dir}/train_reverb.new ${data_dir}/train_reverb
+
+    # Prepare the MUSAN corpus, which consists of music, speech, and noise
+    # suitable for augmentation.
+    steps/data/make_musan.sh --sampling-rate 16000 $MUSAN_DIR ${data_dir}
+
+    # Get the duration of the MUSAN recordings.  This will be used by the
+    # script augment_data_dir.py.
+    for name in speech noise music; do
+      rm -rf ${data_dir}/musan_${name}
+      utils/data/get_utt2dur.sh ${data_dir}/musan_${name}
+      mv ${data_dir}/musan_${name}/utt2dur ${data_dir}/musan_${name}/reco2dur
+    done
+
+    # Augment with musan_noise
+    steps/data/augment_data_dir.py --utt-suffix "noise" --fg-interval 1 --fg-snrs "15:10:5:0" --fg-noise-dir ${data_dir}/musan_noise ${data_dir}/train_combined ${data_dir}/train_noise
+    # Augment with musan_music
+    steps/data/augment_data_dir.py --utt-suffix "music" --bg-snrs "15:10:8:5" --num-bg-noises "1" --bg-noise-dir ${data_dir}/musan_music ${data_dir}/train_combined ${data_dir}/train_music
+    # Augment with musan_speech
+    steps/data/augment_data_dir.py --utt-suffix "babble" --bg-snrs "20:17:15:13" --num-bg-noises "3:4:5:6:7" --bg-noise-dir ${data_dir}/musan_speech ${data_dir}/train_combined ${data_dir}/train_babble
+
+    # Combine reverb, noise, music, and babble into one directory.
+    utils/combine_data.sh ${data_dir}/train_aug ${data_dir}/train_reverb ${data_dir}/train_noise ${data_dir}/train_music ${data_dir}/train_babble
+    echo "stage $stage (augmenting with noise): end"
+  fi
+
+  if [ $stage -eq 8 ]; then
+    echo "stage $stage (sampling and extracting MFCCs for noise): start"
+    # Take a random subset of the augmentations
+    utils/subset_data_dir.sh ${data_dir}/train_aug $num_noisy_samples ${data_dir}/train_aug_sub
+
+    utils/fix_data_dir.sh ${data_dir}/train_aug_sub
+
+    # Make MFCCs for the augmented data.  Note that we do not compute a new
+    # vad.scp file here.  Instead, we use the vad.scp from the clean version of
+    # the list.
+    steps/make_mfcc_pitch.sh --mfcc-config conf/mfcc.conf --pitch-config conf/pitch.conf --nj 40 --cmd "$train_cmd" \
+      ${data_dir}/train_aug_sub ${root}/exp/make_mfcc $mfccdir
+
+    # Combine the clean and augmented CremaD list.  This is now roughly
+    # double the size of the original clean list.
+    utils/combine_data.sh ${data_dir}/train_combined_temp ${data_dir}/train_aug_1m ${data_dir}/train_combined
+    rm -rf ${data_dir}/train_combined
+    mv ${data_dir}/train_combined_temp ${data_dir}/train_combined
+    rm -rf ${data_dir}/train_combined_temp
+    echo "stage $stage (sampling and extracting MFCCs for noise): end"
   fi
 fi
 
