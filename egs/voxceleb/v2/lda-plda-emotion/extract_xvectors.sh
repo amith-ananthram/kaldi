@@ -10,10 +10,11 @@ num_layers=placeholder
 corpus_dir=placeholder
 output_base_dir=placeholder
 
+chunk_size=-1
+
 . ./utils/parse_options.sh
 
 start_layer=6
-chunk_size=-1
 min_chunk_size=25
 max_chunk_size=10000
 

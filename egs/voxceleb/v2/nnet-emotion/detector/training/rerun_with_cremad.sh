@@ -178,7 +178,6 @@ if $include_noise; then
     # Get the duration of the MUSAN recordings.  This will be used by the
     # script augment_data_dir.py.
     for name in speech noise music; do
-      rm -rf ${data_dir}/musan_${name}
       utils/data/get_utt2dur.sh ${data_dir}/musan_${name}
       mv ${data_dir}/musan_${name}/utt2dur ${data_dir}/musan_${name}/reco2dur
     done
@@ -210,7 +209,7 @@ if $include_noise; then
 
     # Combine the clean and augmented CremaD list.  This is now roughly
     # double the size of the original clean list.
-    utils/combine_data.sh ${data_dir}/train_combined_temp ${data_dir}/train_aug_1m ${data_dir}/train_combined
+    utils/combine_data.sh ${data_dir}/train_combined_temp ${data_dir}/train_aug_sub ${data_dir}/train_combined
     rm -rf ${data_dir}/train_combined
     mv ${data_dir}/train_combined_temp ${data_dir}/train_combined
     rm -rf ${data_dir}/train_combined_temp
@@ -259,7 +258,7 @@ if [ $stage -eq 11 ]; then
   sid/nnet3/xvector/get_egs.sh --cmd "$train_cmd" \
     --nj 8 \
     --stage 0 \
-    --frames-per-iter 10000000 \
+    --frames-per-iter 30000000 \
     --frames-per-iter-diagnostic 100000 \
     --min-frames-per-chunk $min_num_frames \
     --max-frames-per-chunk $min_num_frames \
