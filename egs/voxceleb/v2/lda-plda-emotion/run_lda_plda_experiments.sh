@@ -1313,81 +1313,81 @@ set -e
 # 	--train_corpora cremad,iemocap1 \
 # 	--output_dir lda_output
 
-lda-plda-emotion/lda_plda.sh \
-	--variant "00201" \
-	--lda_dim 100 \
-	--speech_dir models/cremad/27/xvectors/7/ \
-	--text_dir text_embeddings/Restructured/DailyDialog \
-	--train_corpora cremad \
-	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00201" \
+# 	--lda_dim 100 \
+# 	--speech_dir models/cremad/27/xvectors/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
 
-lda-plda-emotion/lda_plda.sh \
-	--variant "00202" \
-	--lda_dim 300 \
-	--speech_dir models/cremad/27/xvectors/7/ \
-	--text_dir text_embeddings/Restructured/DailyDialog \
-	--train_corpora cremad \
-	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00202" \
+# 	--lda_dim 300 \
+# 	--speech_dir models/cremad/27/xvectors/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
 
-lda-plda-emotion/lda_plda.sh \
-	--variant "00203" \
-	--lda_dim 400 \
-	--speech_dir models/cremad/27/xvectors/7/ \
-	--text_dir text_embeddings/Restructured/DailyDialog \
-	--train_corpora cremad \
-	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00203" \
+# 	--lda_dim 400 \
+# 	--speech_dir models/cremad/27/xvectors/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
 
-lda-plda-emotion/lda_plda.sh \
-	--variant "00204" \
-	--lda_dim 500 \
-	--speech_dir models/cremad/27/xvectors/7/ \
-	--text_dir text_embeddings/Restructured/DailyDialog \
-	--train_corpora cremad \
-	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00204" \
+# 	--lda_dim 500 \
+# 	--speech_dir models/cremad/27/xvectors/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
 
-lda-plda-emotion/lda_plda.sh \
-	--variant "00205" \
-	--lda_dim 600 \
-	--speech_dir models/cremad/27/xvectors/7/ \
-	--text_dir text_embeddings/Restructured/DailyDialog \
-	--train_corpora cremad \
-	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00205" \
+# 	--lda_dim 600 \
+# 	--speech_dir models/cremad/27/xvectors/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
 
-lda-plda-emotion/lda_plda.sh \
-	--variant "00206" \
-	--lda_dim 700 \
-	--speech_dir models/cremad/27/xvectors/7/ \
-	--text_dir text_embeddings/Restructured/DailyDialog \
-	--train_corpora cremad \
-	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00206" \
+# 	--lda_dim 700 \
+# 	--speech_dir models/cremad/27/xvectors/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
 
-lda-plda-emotion/lda_plda.sh \
-	--variant "00207" \
-	--lda_dim 800 \
-	--speech_dir models/cremad/27/xvectors/7/ \
-	--text_dir text_embeddings/Restructured/DailyDialog \
-	--train_corpora cremad \
-	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00207" \
+# 	--lda_dim 800 \
+# 	--speech_dir models/cremad/27/xvectors/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
 
-lda-plda-emotion/lda_plda.sh \
-	--variant "00208" \
-	--lda_dim 900 \
-	--speech_dir models/cremad/27/xvectors/7/ \
-	--text_dir text_embeddings/Restructured/DailyDialog \
-	--train_corpora cremad \
-	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00208" \
+# 	--lda_dim 900 \
+# 	--speech_dir models/cremad/27/xvectors/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
 
-lda-plda-emotion/lda_plda.sh \
-	--variant "00209" \
-	--lda_dim 1000 \
-	--speech_dir models/cremad/27/xvectors/7/ \
-	--text_dir text_embeddings/Restructured/DailyDialog \
-	--train_corpora cremad \
-	--output_dir lda_output
+# lda-plda-emotion/lda_plda.sh \
+# 	--variant "00209" \
+# 	--lda_dim 1000 \
+# 	--speech_dir models/cremad/27/xvectors/7/ \
+# 	--text_dir text_embeddings/Restructured/DailyDialog \
+# 	--train_corpora cremad \
+# 	--output_dir lda_output
 
 lda-plda-emotion/lda_plda.sh \
 	--variant "00210" \
-	--lda_dim 100 \ 
+	--lda_dim 100 \
 	--speech_dir models/cremad/27/xvectors/7/ \
 	--text_dir text_embeddings/Restructured/DailyDialog+IEMOCAP_0 \
 	--train_corpora cremad,iemocap1 \
