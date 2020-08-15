@@ -128,7 +128,7 @@ if [ $stage -eq 1 ]; then
 		additional_layers=''
 	elif [ $num_layers -eq 8 ]; then
 		additional_layers='relu-batchnorm-layer name=tdnn8 dim=512'
-	elif [ $num_layers -eq 9 ]: then 
+	elif [ $num_layers -eq 9 ]; then 
 		additional_layers=<<-ADDITIONAL_LAYERS
 			relu-batchnorm-layer name=tdnn8 dim=512
 			relu-batchnorm-layer name=tdnn9 dim=256
@@ -217,7 +217,7 @@ if [ $stage -eq 2 ]; then
 		--train_corpora $train_corpora \
 		--train_corpora_config $train_corpora_config \
 		--target_emotions_mode $target_emotions_mode \
-		--target_emotions_config $ target_emotions_config \
+		--target_emotions_config $target_emotions_config \
 		--output_dir $DATA_OUTPUT_COMBINED_DIR
 
 	# call to a single python directory which generates the various files for train_corpora

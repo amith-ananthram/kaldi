@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import os
 import glob
 import argparse
@@ -199,7 +201,7 @@ if __name__ == '__main__':
 	parser.add_argument('--train_corpora', dest='train_corpora', help='The training corpora to use (cremad, iemocap{1|2|3|4|5})', required=True)
 	parser.add_argument('--train_corpora_config', dest='train_corpora_config', help='How to select examples from each training corpus.', required=True)
 	parser.add_argument('--target_emotions_mode', dest='target_emotions_mode', help='\'select\' or \'collapse\'', required=True)
-	parser.add_argument('--target_emotions_config', dest='event_cs_filepath', help='How to select or collapse labels.', required=True)
+	parser.add_argument('--target_emotions_config', dest='target_emotions_config', help='How to select or collapse labels.', required=True)
 	parser.add_argument('--output_dir', dest='output_dir', help='Where to place generated utt2spk and wav.scp files', required=True)
 	args = parser.parse_args()
 
@@ -214,7 +216,7 @@ if __name__ == '__main__':
 	iemocap_to_include = set()
 	iemocap_to_exclude = list(filter(lambda corpus: 'iemocap' in corpus, train_corpora))
 	if len(iemocap_to_exclude) > 1:
-		raise Exception("Please specify the part of IEMOCAP you want to exclude!"))
+		raise Exception("Please specify the part of IEMOCAP you want to exclude!")
 	else:
 		for i in range(1, 6):
 			if 'iemocap%s' % i in iemocap_to_exclude:
