@@ -14,7 +14,7 @@ test_set=all_iemocap
 
 . ./utils/parse_options.sh
 
-BASE_DIR="evaluate"
+BASE_DIR="nnet-emotion/evaluate"
 MFCC_DIR="${BASE_DIR}/mfcc"
 
 # prepare the corpus for feature extraction
@@ -38,7 +38,7 @@ fi
 if [ $stage -eq 1 ]; then
 	echo "Stage $stage: start"
 	for session in 1 2 3 4 5; do
-		session_input_path="${BASE_DIR}/session${session}" 
+		session_input_path="${BASE_DIR}/iemocap${session}" 
 		steps/make_mfcc_pitch.sh --write-utt2num-frames true --mfcc-config conf/mfcc.conf --pitch-config conf/pitch.conf --nj 40 --cmd "$train_cmd" \
 			$session_input_path ${BASE_DIR}/exp/make_mfcc $MFCC_DIR
 		utils/fix_data_dir.sh $session_input_path
@@ -46,25 +46,25 @@ if [ $stage -eq 1 ]; then
       		$session_input_path ${BASE_DIR}/exp/make_vad $MFCC_DIR
       	utils/fix_data_dir.sh $session_input_path
 	done
-	utils/combine_data.sh "${BASE_DIR}/all_iemocap" "${BASE_DIR}/session1" "${BASE_DIR}/session2" "${BASE_DIR}/session3" "${BASE_DIR}/session4" "${BASE_DIR}/session5"
+	utils/combine_data.sh "${BASE_DIR}/all_iemocap" "${BASE_DIR}/iemocap1" "${BASE_DIR}/iemocap2" "${BASE_DIR}/iemocap3" "${BASE_DIR}/iemocap4" "${BASE_DIR}/iemocap5"
 	echo "Stage $stage: end"
 fi
 
 # run extracted features through the nnet
 if [ $stage -eq 2 ]; then
 	echo "Stage $stage: generating predictions for specified model"
-	mkdir -p "${model_path}/predictions"
-	nnet3-xvector-compute-batched --use-gpu=yes --chunk-size=$chunk_size "${model_path}/final.raw" scp:${BASE_DIR}/$test_set/feats.scp ark:${model_path}/predictions/iemocap_predictions.ark
+	mkdir -p "${base_dir}/predictions"
+	nnet3-xvector-compute-batched --use-gpu=yes "${model_path}/final.raw" scp:${BASE_DIR}/$test_set/feats.scp ark:${base_dir}/predictions/iemocap_predictions.ark
 	echo "Stage $stage: end"
 fi
 
 # score nnet predictions against actual labels
 if [ $stage -eq 3 ]; then 
 	echo "Stage $stage: generating scores for specified model"
-	mkdir -p "${model_path}/scores"
+	mkdir -p "${BASE_DIR}/scores"
 	nnet-emotion/detector/scoring/score_emotion_prediction_results.py \
 		"${BASE_DIR}/$test_set/utt2spk" \
-		"${model_path}/predictions/iemocap_predictions.ark" \
-		"${model_path}/scores/iemocap_scores.txt"
+		"${BASE_DIR}/predictions/iemocap_predictions.ark" \
+		"${BASE_DIR}/scores/iemocap_scores.txt"
 	echo "Stage $stage: end"
 fi
