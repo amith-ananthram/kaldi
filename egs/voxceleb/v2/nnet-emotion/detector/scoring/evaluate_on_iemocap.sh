@@ -7,7 +7,6 @@ set -e
 
 stage=placeholder
 model_path=placeholder
-chunk_size=placeholder
 target_emotions_mode=placeholder
 target_emotions_config=placeholder
 test_set=all_iemocap
@@ -53,8 +52,8 @@ fi
 # run extracted features through the nnet
 if [ $stage -eq 2 ]; then
 	echo "Stage $stage: generating predictions for specified model"
-	mkdir -p "${base_dir}/predictions"
-	nnet3-xvector-compute-batched --use-gpu=yes "${model_path}/final.raw" scp:${BASE_DIR}/$test_set/feats.scp ark:${base_dir}/predictions/iemocap_predictions.ark
+	mkdir -p "${BASE_DIR}/predictions"
+	nnet3-xvector-compute-batched --use-gpu=yes "${model_path}/final.raw" scp:${BASE_DIR}/$test_set/feats.scp ark:${BASE_DIR}/predictions/iemocap_predictions.ark
 	echo "Stage $stage: end"
 fi
 

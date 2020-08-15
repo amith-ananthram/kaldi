@@ -32,6 +32,7 @@ include_noise=true
 num_noisy_samples=-1
 remove_sil=false
 min_num_frames=150
+max_num_frames=150
 
 # these command line options allow specifying more 
 # / fewer layers in the fine-tuned model and different 
@@ -335,7 +336,7 @@ if [ $stage -eq 6 ]; then
 	log_stage_start
 
 	# Now, we need to remove features that are too short.
-	min_len=$min_num_frames
+	min_len=$max_num_frames
 	mv ${DATA_OUTPUT_DIR}/train_combined_no_sil/utt2num_frames ${DATA_OUTPUT_DIR}/train_combined_no_sil/utt2num_frames.bak
 	awk -v min_len=${min_len} '$2 > min_len {print $1, $2}' ${DATA_OUTPUT_DIR}/train_combined_no_sil/utt2num_frames.bak > ${DATA_OUTPUT_DIR}/train_combined_no_sil/utt2num_frames
 	utils/filter_scp.pl ${DATA_OUTPUT_DIR}/train_combined_no_sil/utt2num_frames ${DATA_OUTPUT_DIR}/train_combined_no_sil/utt2spk > ${DATA_OUTPUT_DIR}/train_combined_no_sil/utt2spk.new
@@ -356,7 +357,7 @@ if [ $stage -eq 7 ]; then
 	--frames-per-iter 30000000 \
 	--frames-per-iter-diagnostic 100000 \
 	--min-frames-per-chunk $min_num_frames \
-	--max-frames-per-chunk $min_num_frames \
+	--max-frames-per-chunk $max_num_frames \
 	--num-diagnostic-archives 3 \
 	--num-repeats 500 \
 	${DATA_OUTPUT_DIR}/train_combined_no_sil $nnet_dir/egs
