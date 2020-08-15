@@ -93,7 +93,7 @@ log "first_six_lr=$first_six_lr"
 log "dropout=$dropout"
 log "epochs=$epochs"
 
-if [ $stage -eq 0 ]; then
+if [ $stage -le 0 ]; then
 	stage_details="making directory structure"
 	log_stage_start
 
@@ -117,7 +117,7 @@ if [ $stage -eq 0 ]; then
 	log_stage_end
 fi
 
-if [ $stage -eq 1 ]; then
+if [ $stage -le 1 ]; then
 	stage_details="preparing model"
 	log_stage_start
 
@@ -210,7 +210,7 @@ if [ $stage -eq 1 ]; then
 	log_stage_end
 fi
 
-if [ $stage -eq 2 ]; then
+if [ $stage -le 2 ]; then
 	stage_details="generating various input files (utt2spk, spk2utt, etc)"
 	log_stage_start
 
@@ -227,7 +227,7 @@ if [ $stage -eq 2 ]; then
 	log_stage_end
 fi
 
-if [ $stage -eq 3 ]; then 
+if [ $stage -le 3 ]; then 
 	stage_details="extracting MFCCs and VAD"
 	log_stage_start
 
@@ -241,7 +241,7 @@ if [ $stage -eq 3 ]; then
 	log_stage_end 
 fi 
 
-if [ $stage -eq 4 ]; then 
+if [ $stage -le 4 ]; then 
 	stage_details="adding noise"
 	log_stage_start
 
@@ -314,7 +314,7 @@ if [ $stage -eq 4 ]; then
 	log_stage_end
 fi
 
-if [ $stage -eq 5 ]; then 
+if [ $stage -le 5 ]; then 
 	stage_details="removing silence"
 	log_stage_start
 
@@ -331,7 +331,7 @@ if [ $stage -eq 5 ]; then
 	log_stage_end
 fi
 
-if [ $stage -eq 6 ]; then 
+if [ $stage -le 6 ]; then 
 	stage_details="filtering utterances < $min_num_frames"
 	log_stage_start
 
@@ -346,7 +346,7 @@ if [ $stage -eq 6 ]; then
 	log_stage_end
 fi
 
-if [ $stage -eq 7 ]; then
+if [ $stage -le 7 ]; then
 	stage_details="generating training examples"
 	log_stage_start
 
@@ -366,7 +366,7 @@ if [ $stage -eq 7 ]; then
 fi
 
 srand=123
-if [ $stage -eq 8 ]; then
+if [ $stage -le 8 ]; then
 	stage_details="training"
 	log_stage_start
 
