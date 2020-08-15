@@ -14,7 +14,7 @@ test_set=all_iemocap
 
 . ./utils/parse_options.sh
 
-BASE_DIR="evaluate"
+BASE_DIR="nnet-emotion/evaluate"
 MFCC_DIR="${BASE_DIR}/mfcc"
 
 # prepare the corpus for feature extraction
@@ -54,7 +54,7 @@ fi
 if [ $stage -eq 2 ]; then
 	echo "Stage $stage: generating predictions for specified model"
 	mkdir -p "${model_path}/predictions"
-	nnet3-xvector-compute-batched --use-gpu=yes --chunk-size=$chunk_size "${model_path}/final.raw" scp:${BASE_DIR}/$test_set/feats.scp ark:${model_path}/predictions/iemocap_predictions.ark
+	nnet3-xvector-compute-batched --use-gpu=yes "${model_path}/final.raw" scp:${BASE_DIR}/$test_set/feats.scp ark:${model_path}/predictions/iemocap_predictions.ark
 	echo "Stage $stage: end"
 fi
 
