@@ -112,7 +112,7 @@ if [ $stage -eq 0 ]; then
 			chmod -R 775 $dir
 		fi
 	done
-
+	cp vox2_base.raw $MODEL_INPUT_DIR
 	log_stage_end
 fi
 
@@ -291,7 +291,7 @@ if [ $stage -eq 4 ]; then
 		utils/combine_data.sh ${DATA_OUTPUT_DIR}/train_aug ${DATA_OUTPUT_DIR}/train_reverb ${DATA_OUTPUT_DIR}/train_noise ${DATA_OUTPUT_DIR}/train_music ${DATA_OUTPUT_DIR}/train_babble	
 
 		if [ $num_noisy_samples -eq -1 ]; then
-			num_noisy_samples=$(wc -l $DATA_OUTPUT_COMBINED_DIR/utt2spk)
+			num_noisy_samples=$(wc -l $DATA_OUTPUT_COMBINED_DIR/utt2spk | awk '{ print $1 }')
 		fi
 		log "Randomly sampling $num_noisy_samples noise examples and extracting their MFCCs...."
 		utils/subset_data_dir.sh ${DATA_OUTPUT_DIR}/train_aug $num_noisy_samples ${DATA_OUTPUT_DIR}/train_aug_sub
@@ -359,7 +359,7 @@ if [ $stage -eq 7 ]; then
 	--max-frames-per-chunk $min_num_frames \
 	--num-diagnostic-archives 3 \
 	--num-repeats 500 \
-	${data_dir}/train_combined_no_sil $nnet_dir/egs
+	${DATA_OUTPUT_DIR}/train_combined_no_sil $nnet_dir/egs
 
 	log_stage_end
 fi
