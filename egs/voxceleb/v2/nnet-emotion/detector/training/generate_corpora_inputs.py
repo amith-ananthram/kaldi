@@ -156,6 +156,9 @@ def get_iemocap_utterances(subsets, config, emotion_mapper):
 				if int(session) not in subsets:
 					continue 
 
+				if config != 'all' and dialogue_type != IEMOCAP_DIALOGUE_TYPES[config]:
+					continue
+
 				if orig_emotion not in emotion_mapper:
 					continue
 
