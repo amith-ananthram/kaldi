@@ -16,7 +16,7 @@ CREMAD_LABEL_AGREEMENTS = {'any', 'all'}
 
 IEMOCAP_DIR = 'corpora/iemocap/'
 IEMOCAP_WAV_DIR = os.path.join(IEMOCAP_DIR, 'IEMOCAP_full_release')
-IEMOCAP_INPUT_CSV = os.path.join(IEMOCAP_DIR, 'csvs')
+IEMOCAP_INPUT_CSV_DIR = os.path.join(IEMOCAP_DIR, 'csvs')
 
 IEMOCAP_EMOTIONS = bidict({emo: emo for emo in ['ang', 'dis', 'exc', 'fea', 'fru', 'hap', 'neu', 'sad', 'sur']})
 IEMOCAP_DIALOGUE_TYPES = {'improv': ['improvisation'], 'script': ['script'], 'all': ['improvisation', 'script']}
@@ -117,69 +117,72 @@ def get_cremad_utterances(config, emotion_mapper):
 	return utterances
 
 def get_iemocap_utterances(subsets, config, emotion_mapper):
-	src_file = None
-	if input_csv.find("train") != -1:
-		src_file = "train"
-	elif input_csv.find("dev") != -1:
-		src_file = "dev"
-	else:
-		src_file = "test"
-
 	utterances = []
-	with open(input_csv) as f:
-		csv_reader = csv.reader(f, delimiter=',')
-		line_count = 0
-		for row in csv_reader:
-			if line_count == 0:
-				line_count += 1
-				continue
-			else:
-				# example CSV row
-				# 0 Sr.No: 1303
-				# 1 Session_Number: 01
-				# 2 Mocap_Source: F
-				# 3 Dialogue_Type: improvisation
-				# 4 Dialogue_Number: 01
-				# 5 Utterance_Number: 000
-				# 6 StartTime: 6.2901
-				# 7 EndTime: 8.2357
-				# 8 Utterance: Excuse me.
-				# 9 Speaker: F
-				# 10 Emotion: neu
-				session = row[1]
-				mocap_source = row[2]
-				dialogue_type = row[3]
-				dialogue_number = row[4]
-				utterance_number = row[5]
-				utterance = row[8]
-				speaker = row[9]
-				orig_emotion = row[10]
+	for subset in subsets:
+		input_csv = os.path.join(IEMOCAP_INPUT_CSV_DIR, 'Session%s.csv' % (subset))
 
-				if int(session) not in subsets:
-					continue 
+		src_file = None
+		if input_csv.find("train") != -1:
+			src_file = "train"
+		elif input_csv.find("dev") != -1:
+			src_file = "dev"
+		else:
+			src_file = "test"
 
-				if config != 'all' and dialogue_type != IEMOCAP_DIALOGUE_TYPES[config]:
+		with open(input_csv) as f:
+			csv_reader = csv.reader(f, delimiter=',')
+			line_count = 0
+			for row in csv_reader:
+				if line_count == 0:
+					line_count += 1
 					continue
+				else:
+					# example CSV row
+					# 0 Sr.No: 1303
+					# 1 Session_Number: 01
+					# 2 Mocap_Source: F
+					# 3 Dialogue_Type: improvisation
+					# 4 Dialogue_Number: 01
+					# 5 Utterance_Number: 000
+					# 6 StartTime: 6.2901
+					# 7 EndTime: 8.2357
+					# 8 Utterance: Excuse me.
+					# 9 Speaker: F
+					# 10 Emotion: neu
+					session = row[1]
+					mocap_source = row[2]
+					dialogue_type = row[3]
+					dialogue_number = row[4]
+					utterance_number = row[5]
+					utterance = row[8]
+					speaker = row[9]
+					orig_emotion = row[10]
 
-				if orig_emotion not in emotion_mapper:
-					continue
+					if int(session) != int(subset):
+						raise Exception("Unexpectedly found %s in CSV for %s" % (session, subset)) 
 
-				mapped_emotion = emotion_mapper[orig_emotion]
-				utterances.append(
-					UtteranceDetails(
-						session,
-						mocap_source,
-						dialogue_type,
-						dialogue_number,
-						utterance_number,
-						utterance,
-						speaker,
-						src_file,
-						orig_emotion,
-						mapped_emotion
+					if config != 'all' and dialogue_type != IEMOCAP_DIALOGUE_TYPES[config]:
+						continue
+
+					if orig_emotion not in emotion_mapper:
+						continue
+
+					mapped_emotion = emotion_mapper[orig_emotion]
+					utterances.append(
+						UtteranceDetails(
+							session,
+							mocap_source,
+							dialogue_type,
+							dialogue_number,
+							utterance_number,
+							utterance,
+							speaker,
+							src_file,
+							orig_emotion,
+							mapped_emotion
+						)
 					)
-				)
-				line_count += 1
+					line_count += 1
 	return utterances
 
 def generate_utt2spk(emotion_mapper, utterances, output_data_dir):
