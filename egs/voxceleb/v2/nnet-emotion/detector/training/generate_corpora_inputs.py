@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import csv
 import glob
 import argparse
 import numpy as np
@@ -60,6 +61,17 @@ class IemocapUtteranceDetails:
 		self.orig_emotion = orig_emotion
 		self.mapped_emotion = mapped_emotion
 
+	# old id format (required to find WAV files)
+	def get_old_id(self):
+		return "Ses%s%s_%s%s_%s%s" % (
+			self.session,
+			self.mocap_source,
+			self.get_dialogue_type_shortname(),
+			self.dialogue_number,
+			self.speaker,
+			self.utterance_number
+		)
+
 	# new id format (required for LDA / PLDA training)
 	def get_id(self):
 		return "%s-%s-%s%s-%s-%s-%s-%s" % (
@@ -85,7 +97,7 @@ class IemocapUtteranceDetails:
 			self.mocap_source,
 			self.get_dialogue_type_shortname(),
 			self.dialogue_number,
-			self.get_old_id()[2:]
+			self.get_old_id()
 		))
 
 def get_cremad_utterances(config, emotion_mapper):
@@ -98,7 +110,7 @@ def get_cremad_utterances(config, emotion_mapper):
 		for w in glob.glob(os.path.join(CREMAD_WAV_DIR, '*.wav'))}
 
 	utterances = []
-	with open(input_csv) as f:
+	with open(CREMAD_INPUT_CSV) as f:
 		csv_reader = csv.DictReader(f, delimiter=',')
 		for row in csv_reader:
 			file_name = row["FileName"]
@@ -169,7 +181,7 @@ def get_iemocap_utterances(subsets, config, emotion_mapper):
 
 					mapped_emotion = emotion_mapper[orig_emotion]
 					utterances.append(
-						UtteranceDetails(
+						IemocapUtteranceDetails(
 							session,
 							mocap_source,
 							dialogue_type,
@@ -191,12 +203,12 @@ def generate_utt2spk(emotion_mapper, utterances, output_data_dir):
 		for utterance in sorted(utterances, key=lambda utterance: utterance.get_id()):
 			f.write("%s %s\n" % (utterance.get_id(), emotions_to_id[utterance.get_emotion()]))
 
-def generate_wavscp(utterances, input_data_dir, output_data_dir):
+def generate_wavscp(utterances, output_data_dir):
 	with open(os.path.join(output_data_dir, WAV_FILE), 'w') as f:
 		for utterance in sorted(utterances, key=lambda utterance: utterance.get_id()):
 			if not os.path.exists(utterance.get_wav_filename()):
-				raise Exception('Missing file: %s' % (utterance.get_filename()))
-			wav_creation_cmd = "ffmpeg -v 8 -i %s -f wav -ar 16000 -acodec pcm_s16le -|" % (wav_file_path)
+				raise Exception('Missing file: %s' % (utterance.get_wav_filename()))
+			wav_creation_cmd = "ffmpeg -v 8 -i %s -f wav -ar 16000 -acodec pcm_s16le -|" % (utterance.get_wav_filename())
 			f.write("%s %s\n" % (utterance.get_id(), wav_creation_cmd))
 
 if __name__ == '__main__':
@@ -208,13 +220,13 @@ if __name__ == '__main__':
 	parser.add_argument('--output_dir', dest='output_dir', help='Where to place generated utt2spk and wav.scp files', required=True)
 	args = parser.parse_args()
 
-	train_corpora = set(args.train_corpora.split(','))
-	if len(train_corpora - SUPPORTED_CORPORA) > 0:
-		raise Exception("Unsupported train_corpora: %s" % (train_corpora - SUPPORTED_CORPORA))
+	train_corpora = args.train_corpora.split(',')
+	if len(set(train_corpora) - SUPPORTED_CORPORA) > 0:
+		raise Exception("Unsupported train_corpora: %s" % (set(train_corpora) - SUPPORTED_CORPORA))
 
 	train_corpora_config = list(args.train_corpora_config.split(','))
 	if len(train_corpora) != len(train_corpora_config):
-		raise Exception("train_corpora / train_corpora_config length mismatch!")
+		raise Exception("train_corpora / train_corpora_config length mismatch: %s, %s!" % (args.train_corpora, args.train_corpora_config))
 
 	iemocap_to_include = set()
 	iemocap_to_exclude = list(filter(lambda corpus: 'iemocap' in corpus, train_corpora))
@@ -258,7 +270,7 @@ if __name__ == '__main__':
 		else:
 			utterances.extend(get_iemocap_utterances(iemocap_to_include, train_corpus_config, emotion_mapper))
 
-	generate_utt2spk(utterances, args.output_dir)
+	generate_utt2spk(emotion_mapper, utterances, args.output_dir)
 	generate_wavscp(utterances, args.output_dir)
 
 
