@@ -22,7 +22,12 @@ def main():
 	y_pred = []
 	for utt in (utt2labels.keys() | utt2predictions.keys()):
 		y_true.append(utt2labels[utt])
-		y_pred.append(np.argmax(utt2predictions[utt]))
+		# frame level predictions
+		if len(utt2predictions[utt]) > 10:
+			prediction = np.sum(utt2predictions[utt], axis=0)
+		else:
+			prediction = utt2predictions[utt]
+		y_pred.append(np.argmax(prediction))
 
 	accuracy = accuracy_score(y_true, y_pred)
 	micro_f1 = f1_score(y_true, y_pred, average='micro')

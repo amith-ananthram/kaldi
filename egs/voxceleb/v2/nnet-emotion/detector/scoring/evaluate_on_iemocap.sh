@@ -9,6 +9,7 @@ stage=placeholder
 model_path=placeholder
 target_emotions_mode=placeholder
 target_emotions_config=placeholder
+chunk_size=-1
 test_set=all_iemocap
 
 . ./utils/parse_options.sh
@@ -20,7 +21,7 @@ MFCC_DIR="${BASE_DIR}/mfcc"
 if [ $stage -eq 0 ]; then
 	echo "Stage $stage: start"
 	for session in 1 2 3 4 5; do
-		session_output_path="${BASE_DIR}/session${session}"
+		session_output_path="${BASE_DIR}/iemocap${session}"
 		mkdir -p $session_output_path
 		nnet-emotion/detector/scoring/generate_iemocap_inputs.py \
 			--test_corpus "iemocap${session}" \

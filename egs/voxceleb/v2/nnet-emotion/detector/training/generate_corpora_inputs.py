@@ -11,7 +11,7 @@ CREMAD_DIR = 'corpora/CREMA-D'
 CREMAD_WAV_DIR = os.path.join(CREMAD_DIR, 'AudioWAV')
 CREMAD_INPUT_CSV = os.path.join(CREMAD_DIR, 'processedResults/summaryTable.csv')
 
-CREMAD_EMOTIONS = bidict({'ang': 'A', 'dis': 'D', 'fea': 'F', 'hap': 'H', 'neu': 'N', 'sad': 'S'})
+CREMAD_EMOTIONS = {'ang': 'A', 'dis': 'D', 'exc': 'H', 'fea': 'F', 'hap': 'H', 'neu': 'N', 'sad': 'S'}
 CREMAD_LABEL_TYPES = {'voice': 'Voice', 'multi': 'MultiModal'}
 CREMAD_LABEL_AGREEMENTS = {'any', 'all'}
 
@@ -123,9 +123,17 @@ def get_cremad_utterances(config, emotion_mapper):
 			if label_agreement == 'all' and len(votes) > 1:
 				continue
 
-			emotion = CREMAD_EMOTIONS.inverse[votes[np.argmax(levels)]]
-			if emotion in emotion_mapper:
-				utterances.append(CremaDUtteranceDetails(file_name, wav_filepath, emotion))
+			general_emotions = []
+			for (general_emotion, cremad_emotion) in CREMAD_EMOTIONS.items():
+				if cremad_emotion == votes[np.argmax(levels)]:
+					general_emotions.append(general_emotion)
+
+			mapped_emotions = list(filter(lambda general_emotion: general_emotion in emotion_mapper, general_emotions))	
+			if len(mapped_emotions) > 1:
+				raise Exception("Multiple specified general emotions map to the specified CremaD emotion: %s, %s" % (general_emotions, votes[np.argmax(levels)]))
+
+			if len(mapped_emotions) == 1:
+				utterances.append(CremaDUtteranceDetails(file_name, wav_filepath, mapped_emotions[0]))
 	return utterances
 
 def get_iemocap_utterances(subsets, config, emotion_mapper):
