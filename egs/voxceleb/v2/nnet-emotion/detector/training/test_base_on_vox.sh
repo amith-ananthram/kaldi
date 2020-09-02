@@ -23,11 +23,11 @@ fi
 
 # calculate MFCCs and VAD (uses pitch config)
 if [ $stage -eq 1 ]; then
-  steps/make_mfcc.sh --write-utt2num-frames true --mfcc-config conf/mfcc.conf --nj 40 --cmd "$train_cmd" \
-    $datadir/evaluate nnet-emotion/vox-test/exp/make_mfcc $mfccdir
+  steps/make_mfcc_pitch.sh --write-utt2num-frames true --mfcc-config conf/mfcc.conf --pitch-config conf/pitch.conf --nj 40 --cmd "$train_cmd" \
+    $datadir/evaluate nnet-emotion/vox_test/exp/make_mfcc $mfccdir
   utils/fix_data_dir.sh $datadir/evaluate
   sid/compute_vad_decision.sh --nj 40 --cmd "$train_cmd" \
-    $datadir/evaluate nnet-emotion/vox-test/exp/make_vad $vaddir
+    $datadir/evaluate nnet-emotion/vox_test/exp/make_vad $vaddir
   utils/fix_data_dir.sh $datadir/evaluate
 fi
 
