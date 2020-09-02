@@ -13,14 +13,14 @@ VOX1_TEST_DOWNLOAD_URLS=(
   'http://www.robots.ox.ac.uk/~vgg/data/voxceleb/vox1a/vox1_test_wav.zip'
 )
 VOX2_DEV_DOWNLOAD_URLS=(
-  'http://www.robots.ox.ac.uk/~vgg/data/voxceleb/vox1a/vox2_dev_aacaa'
-  'http://www.robots.ox.ac.uk/~vgg/data/voxceleb/vox1a/vox2_dev_aacab'
-  'http://www.robots.ox.ac.uk/~vgg/data/voxceleb/vox1a/vox2_dev_aacac'
-  'http://www.robots.ox.ac.uk/~vgg/data/voxceleb/vox1a/vox2_dev_aacad'
-  'http://www.robots.ox.ac.uk/~vgg/data/voxceleb/vox1a/vox2_dev_aacae'
-  'http://www.robots.ox.ac.uk/~vgg/data/voxceleb/vox1a/vox2_dev_aacaf'
-  'http://www.robots.ox.ac.uk/~vgg/data/voxceleb/vox1a/vox2_dev_aacag'
-  'http://www.robots.ox.ac.uk/~vgg/data/voxceleb/vox1a/vox2_dev_aacah'
+  'http://www.robots.ox.ac.uk/~vgg/data/voxceleb/vox1a/vox2_dev_aac_partaa'
+  'http://www.robots.ox.ac.uk/~vgg/data/voxceleb/vox1a/vox2_dev_aac_partab'
+  'http://www.robots.ox.ac.uk/~vgg/data/voxceleb/vox1a/vox2_dev_aac_partac'
+  'http://www.robots.ox.ac.uk/~vgg/data/voxceleb/vox1a/vox2_dev_aac_partad'
+  'http://www.robots.ox.ac.uk/~vgg/data/voxceleb/vox1a/vox2_dev_aac_partae'
+  'http://www.robots.ox.ac.uk/~vgg/data/voxceleb/vox1a/vox2_dev_aac_partaf'
+  'http://www.robots.ox.ac.uk/~vgg/data/voxceleb/vox1a/vox2_dev_aac_partag'
+  'http://www.robots.ox.ac.uk/~vgg/data/voxceleb/vox1a/vox2_dev_aac_partah'
 )
 VOX2_TEST_DOWNLOAD_URLS=(
   'http://www.robots.ox.ac.uk/~vgg/data/voxceleb/vox1a/vox2_test_aac.zip'

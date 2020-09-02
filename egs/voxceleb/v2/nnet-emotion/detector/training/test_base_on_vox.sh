@@ -12,6 +12,8 @@ voxceleb2_root=corpora/voxceleb/vox2
 
 stage=0
 
+. ./utils/parse_options.sh
+
 # get utt2spk files for vox1 and vox2
 if [ $stage -eq 0 ]; then
 	local/make_voxceleb1_v2.pl $voxceleb1_root test $datadir/voxceleb1_test
