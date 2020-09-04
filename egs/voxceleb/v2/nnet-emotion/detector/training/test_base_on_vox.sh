@@ -39,7 +39,10 @@ fi
 
 # extract x-vectors
 if [ $stage -le 2 ]; then
+	mkdir -p $nnetdir
 	cp vox2_base.raw $nnetdir/final.raw
+	echo "25" > $nnetdir/min_chunk_size
+	echo "10000" > $nnetdir/max_chunk_size
 	echo "output-node name=output input=tdnn6.affine" > $nnetdir/extract.config
 	sid/nnet3/xvector/extract_xvectors.sh --cmd "$train_cmd --mem 4G" --nj 80 \
 		$nnetdir $datadir/train \
@@ -62,7 +65,7 @@ if [ $stage -le 3 ]; then
   $train_cmd $nnetdir/xvectors_train/log/lda.log \
     ivector-compute-lda --total-covariance-factor=0.0 --dim=$lda_dim \
     "ark:ivector-subtract-global-mean scp:$nnetdir/xvectors_train/xvector.scp ark:- |" \
-    ark:data/train/utt2spk $nnetdir/xvectors_train/transform.mat || exit 1;
+    ark:$datadir/train/utt2spk $nnetdir/xvectors_train/transform.mat || exit 1;
 
   # Train the PLDA model.
   $train_cmd $nnetdir/xvectors_train/log/plda.log \
