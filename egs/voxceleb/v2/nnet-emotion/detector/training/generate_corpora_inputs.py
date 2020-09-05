@@ -20,7 +20,7 @@ IEMOCAP_WAV_DIR = os.path.join(IEMOCAP_DIR, 'IEMOCAP_full_release')
 IEMOCAP_INPUT_CSV_DIR = os.path.join(IEMOCAP_DIR, 'csvs')
 
 IEMOCAP_EMOTIONS = bidict({emo: emo for emo in ['ang', 'dis', 'exc', 'fea', 'fru', 'hap', 'neu', 'sad', 'sur']})
-IEMOCAP_DIALOGUE_TYPES = {'improv': ['improvisation'], 'script': ['script'], 'all': ['improvisation', 'script']}
+IEMOCAP_DIALOGUE_TYPES = {'improv': 'improvisation', 'script': 'script'}
 
 SUPPORTED_CORPORA = {'cremad', *['iemocap%s' % subset for subset in range(1, 6)]}
 SUPPORTED_TARGET_EMOTION_MODES = {'select', 'collapse'}

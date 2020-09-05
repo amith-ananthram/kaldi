@@ -10,8 +10,7 @@ set -e
 
 stage=0
 
-# eg cremad,iemocap; if iemocap specified, will
-# train 5 models for 5-fold cross validation
+# eg cremad,iemocap(1|2|3|4|5)
 train_corpora=placeholder
 # eg, voice|all,
 # for cremad: "voice/multi|any/all"
@@ -31,17 +30,22 @@ include_noise=true
 # samples as exist across the corpora already
 num_noisy_samples=-1
 remove_sil=false
+# controls the size of example generation used
+# for nnet training (filters out utterances shorter
+# than min_num_frames FYI!)
 min_num_frames=150
 max_num_frames=150
 
 # these command line options allow specifying more 
 # / fewer layers in the fine-tuned model and different 
 # learning rates for the original layers
-train_stage=-1
 num_layers=7
 first_six_lr=0
 dropout=placeholder
 epochs=6
+
+# if training fails, can restart with this parameter
+train_stage=-1
 
 # used to name experiment output, defaults to runtime
 variant=$(date '+%Y%m%d%H%M%S')
@@ -171,7 +175,6 @@ if [ $stage -le 1 ]; then
 		# mean that no subsampling is performed.
 		stats-layer name=stats config=mean+stddev(0:1:1:${max_chunk_size})
 
-		# This is where we usually extract the embedding (aka xvector) from.
 		relu-batchnorm-layer name=tdnn6 dim=512 input=stats
 
 		relu-batchnorm-layer name=tdnn7 dim=512
