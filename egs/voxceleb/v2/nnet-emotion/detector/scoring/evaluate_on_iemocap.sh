@@ -61,10 +61,10 @@ fi
 # score nnet predictions against actual labels
 if [ $stage -eq 3 ]; then 
 	echo "Stage $stage: generating scores for specified model"
-	mkdir -p "${BASE_DIR}/scores"
+	mkdir -p "${model_path}/scores"
 	nnet-emotion/detector/scoring/score_emotion_prediction_results.py \
 		"${BASE_DIR}/$test_set/utt2spk" \
 		"${BASE_DIR}/predictions/iemocap_predictions.ark" \
-		"${BASE_DIR}/scores/iemocap_scores.txt"
+		"${model_path}/scores/iemocap_scores.txt"
 	echo "Stage $stage: end"
 fi
