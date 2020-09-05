@@ -395,5 +395,9 @@ if [ $stage -le 8 ]; then
 		--use-gpu=wait \
 		--dir=$nnet_dir  || exit 1;
 
+	mkdir models/$variant
+	cp $BASED_DIR/exp/exp/xvector_nnet_1a/final.raw models/$variant
+	cp $BASED_DIR/exp/exp/xvector_nnet_1a/accuracy.output.report models/$variant
+
 	log_stage_end
 fi
