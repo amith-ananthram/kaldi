@@ -1,11 +1,13 @@
+#!/usr/bin/env python
+
 import os
 import argparse
 from collections import defaultdict
 
 if __name__ == '__main__':
-	parser = argparse.ArgumentParser(description='Generate Kaldi input files for CMVN given a source utt2spk file.')
+	parser = argparse.ArgumentParser(description="Generate Kaldi input files for CMVN given a source utt2spk file.")
 	parser.add_argument('--source_utt2spk', dest='source_utt2spk', help='The source utt2spk file to split by actual speaker (instead of emotion)', required=True)
-	parser.add_argument('--output_dir', dest='train_corpora_config', help='The output_dir where we\'ll write utt2spk-norm.', required=True)
+	parser.add_argument('--output_dir', dest='output_dir', help='The output_dir where we\'ll write utt2spk-norm.', required=True)
 	args = parser.parse_args()
 
 	utterances = list()

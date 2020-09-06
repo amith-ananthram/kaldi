@@ -331,14 +331,14 @@ if [ $stage -le 4 ]; then
 
 		utils/utt2spk_to_spk2utt.pl "$DATA_OUTPUT_COMBINED_DIR/utt2spk-norm" > "$DATA_OUTPUT_COMBINED_DIR/spk2utt-norm"
 
-		compute-cmvn-stats --spk2utt=scp:$DATA_OUTPUT_COMBINED_DIR/spk2utt-norm \
+		compute-cmvn-stats --spk2utt=ark:$DATA_OUTPUT_COMBINED_DIR/spk2utt-norm \
 			scp:$DATA_OUTPUT_COMBINED_DIR/feats.scp \
 			ark:$DATA_OUTPUT_COMBINED_DIR/cmvn.ark || exit 1;
 
-		apply-cmvn --utt2spk=scp:$DATA_OUTPUT_COMBINED_DIR/utt2spk-norm \
+		apply-cmvn --utt2spk=ark:$DATA_OUTPUT_COMBINED_DIR/utt2spk-norm \
 			ark:$DATA_OUTPUT_COMBINED_DIR/cmvn.ark \
 			scp:$DATA_OUTPUT_COMBINED_DIR/feats.scp \
-			scp:$DATA_OUTPUT_COMBINED_DIR/normed-feats.scp || exit 1;
+			ark,scp:$DATA_OUTPUT_COMBINED_DIR/normed-feats.ark,$DATA_OUTPUT_COMBINED_DIR/normed-feats.scp || exit 1;
 
 		mv $DATA_OUTPUT_COMBINED_DIR/feats.scp $DATA_OUTPUT_COMBINED_DIR/unnormed-feats.scp
 		mv $DATA_OUTPUT_COMBINED_DIR/normed-feats.scp $DATA_OUTPUT_COMBINED_DIR/feats.scp
