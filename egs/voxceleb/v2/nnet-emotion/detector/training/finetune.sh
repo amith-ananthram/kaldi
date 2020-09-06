@@ -30,6 +30,10 @@ include_noise=true
 # samples as exist across the corpora already
 num_noisy_samples=-1
 remove_sil=false
+
+# normalize (mean 0, std 1) MFCCs and pitch by speaker
+normalize=false
+
 # controls the size of example generation used
 # for nnet training (filters out utterances shorter
 # than min_num_frames FYI!)
@@ -87,6 +91,7 @@ log "num_target_dimensions=$num_target_dimensions"
 log "target_emotions_mode=$target_emotions_mode"
 log "target_emotions_config=$target_emotions_config"
 log "include_noise=$include_noise"
+log "normalize=$normalize"
 log "num_noisy_samples=$num_noisy_samples"
 log "remove_sil=$remove_sil"
 log "min_num_frames=$min_num_frames"
@@ -100,6 +105,9 @@ log "epochs=$epochs"
 if [ $stage -le 0 ]; then
 	stage_details="making directory structure"
 	log_stage_start
+
+	# a clean start
+	rm -rf $BASE_DIR
 
 	dirs=(
 		$BASE_DIR
@@ -245,7 +253,7 @@ if [ $stage -le 3 ]; then
 fi 
 
 if [ $stage -le 4 ]; then 
-	stage_details="adding noise"
+	stage_details="adding noise + normalizing"
 	log_stage_start
 
 	if $include_noise; then 
@@ -314,6 +322,30 @@ if [ $stage -le 4 ]; then
 		log "include_noise=$include_noise, doing nothing."
 	fi
 
+	if $normalize; then 
+		log "normalizing!"
+		
+		nnet-emotion/detector/training/generate_cmvn_inputs.py \
+			--source_utt2spk ${DATA_OUTPUT_COMBINED_DIR}/utt2spk \
+			--output_dir ${DATA_OUTPUT_COMBINED_DIR}
+
+		utils/utt2spk_to_spk2utt.pl "$DATA_OUTPUT_COMBINED_DIR/utt2spk-norm" > "$DATA_OUTPUT_COMBINED_DIR/spk2utt-norm"
+
+		compute-cmvn-stats --spk2utt=scp:$DATA_OUTPUT_COMBINED_DIR/spk2utt-norm \
+			scp:$DATA_OUTPUT_COMBINED_DIR/feats.scp \
+			ark:$DATA_OUTPUT_COMBINED_DIR/cmvn.ark || exit 1;
+
+		apply-cmvn --utt2spk=scp:$DATA_OUTPUT_COMBINED_DIR/utt2spk-norm \
+			ark:$DATA_OUTPUT_COMBINED_DIR/cmvn.ark \
+			scp:$DATA_OUTPUT_COMBINED_DIR/feats.scp \
+			scp:$DATA_OUTPUT_COMBINED_DIR/normed-feats.scp || exit 1;
+
+		mv $DATA_OUTPUT_COMBINED_DIR/feats.scp $DATA_OUTPUT_COMBINED_DIR/unnormed-feats.scp
+		mv $DATA_OUTPUT_COMBINED_DIR/normed-feats.scp $DATA_OUTPUT_COMBINED_DIR/feats.scp
+	else
+		log "normalize=$normalize, doing nothing."
+	fi
+
 	log_stage_end
 fi
 
@@ -335,7 +367,7 @@ if [ $stage -le 5 ]; then
 fi
 
 if [ $stage -le 6 ]; then 
-	stage_details="filtering utterances < $min_num_frames"
+	stage_details="filtering utterances < $max_num_frames"
 	log_stage_start
 
 	# Now, we need to remove features that are too short.

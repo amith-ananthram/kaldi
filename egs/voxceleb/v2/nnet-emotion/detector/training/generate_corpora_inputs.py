@@ -38,7 +38,7 @@ class CremaDUtteranceDetails:
 		return "%s: %s" % (self.file_name, self.emotion)
 
 	def get_id(self):
-		return "%s-%s" % (self.emotion, self.file_name)
+		return "%s-%s-cremad" % (self.emotion, self.file_name)
 
 	def get_emotion(self):
 		return self.emotion
@@ -74,7 +74,7 @@ class IemocapUtteranceDetails:
 
 	# new id format (required for LDA / PLDA training)
 	def get_id(self):
-		return "%s-%s-%s%s-%s-%s-%s-%s" % (
+		return "%s-%s-%s%s-%s-%s-%s-%s-iemocap" % (
 			self.mapped_emotion, self.src_file, self.session, self.mocap_source, 
 			self.dialogue_type, self.dialogue_number, self.utterance_number, self.speaker)
 

@@ -20,6 +20,10 @@ MFCC_DIR="${BASE_DIR}/mfcc"
 # prepare the corpus for feature extraction
 if [ $stage -eq 0 ]; then
 	echo "Stage $stage: start"
+
+	# a clean start
+	rm -rf $BASE_DIR
+	
 	for session in 1 2 3 4 5; do
 		session_output_path="${BASE_DIR}/iemocap${session}"
 		mkdir -p $session_output_path
