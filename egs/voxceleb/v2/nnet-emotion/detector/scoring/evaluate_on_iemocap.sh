@@ -11,6 +11,7 @@ target_emotions_mode=placeholder
 target_emotions_config=placeholder
 chunk_size=-1
 test_set=all_iemocap
+normalize=false
 
 . ./utils/parse_options.sh
 
@@ -49,6 +50,28 @@ if [ $stage -eq 1 ]; then
 		sid/compute_vad_decision.sh --nj 40 --cmd "$train_cmd" \
       		$session_input_path ${BASE_DIR}/exp/make_vad $MFCC_DIR
       	utils/fix_data_dir.sh $session_input_path
+
+		if $normalize; then 
+			echo "normalizing $session!"
+
+			nnet-emotion/detector/training/generate_cmvn_inputs.py \
+				--source_utt2spk $session_input_path/utt2spk \
+				--output_dir $session_input_path
+
+			utils/utt2spk_to_spk2utt.pl "$session_input_path/utt2spk-norm" > "$session_input_path/spk2utt-norm"
+
+			compute-cmvn-stats --spk2utt=ark:$session_input_path/spk2utt-norm \
+				scp:$session_input_path/feats.scp \
+				ark:$session_input_path/cmvn.ark || exit 1;
+
+			apply-cmvn --utt2spk=ark:$session_input_path/utt2spk-norm \
+				ark:$session_input_path/cmvn.ark \
+				scp:$session_input_path/feats.scp \
+				ark,scp:$session_input_path/normed-feats.ark,$session_input_path/normed-feats.scp || exit 1;
+
+			mv $session_input_path/feats.scp $session_input_path/unnormed-feats.scp
+			mv $session_input_path/normed-feats.scp $session_input_path/feats.scp
+		fi
 	done
 	utils/combine_data.sh "${BASE_DIR}/all_iemocap" "${BASE_DIR}/iemocap1" "${BASE_DIR}/iemocap2" "${BASE_DIR}/iemocap3" "${BASE_DIR}/iemocap4" "${BASE_DIR}/iemocap5"
 	echo "Stage $stage: end"
