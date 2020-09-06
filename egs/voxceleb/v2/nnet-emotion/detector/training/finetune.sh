@@ -398,8 +398,8 @@ if [ $stage -le 8 ]; then
 	variant_dir=models/$variant
 	mkdir $variant_dir
 	mv train_log.txt $variant_dir
-	mv $BASED_DIR/exp/exp/xvector_nnet_1a/final.raw $variant_dir
-	mv $BASED_DIR/exp/exp/xvector_nnet_1a/accuracy.output.report $variant_dir
+	mv $BASE_DIR/exp/xvector_nnet_1a/final.raw $variant_dir
+	mv $BASE_DIR/exp/xvector_nnet_1a/accuracy.output.report $variant_dir
 	
 	log_stage_end
 fi

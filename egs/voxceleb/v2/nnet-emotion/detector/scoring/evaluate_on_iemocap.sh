@@ -54,7 +54,11 @@ fi
 if [ $stage -eq 2 ]; then
 	echo "Stage $stage: generating predictions for specified model"
 	mkdir -p "${BASE_DIR}/predictions"
-	nnet3-xvector-compute-batched --use-gpu=yes "${model_path}/final.raw" scp:${BASE_DIR}/$test_set/feats.scp ark:${BASE_DIR}/predictions/iemocap_predictions.ark
+	if [ $chunk_size -eq -1 ]; then
+		nnet3-xvector-compute-batched --use-gpu=yes "${model_path}/final.raw" scp:${BASE_DIR}/$test_set/feats.scp ark:${BASE_DIR}/predictions/iemocap_predictions.ark
+	else
+		nnet3-xvector-compute-batched --use-gpu=yes --chunk-size=$chunk_size "${model_path}/final.raw" scp:${BASE_DIR}/$test_set/feats.scp ark:${BASE_DIR}/predictions/iemocap_predictions.ark
+	fi
 	echo "Stage $stage: end"
 fi
 
