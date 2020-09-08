@@ -73,7 +73,8 @@ fi
 if [ $stage -le 6 ]; then
   for set in test dev train; do
     dir=data/$set
-    steps/make_mfcc.sh --nj 30 --cmd "$train_cmd" $dir
+    steps/make_mfcc_pitch.sh --mfcc-config conf/mfcc.conf \
+      --pitch-config conf/pitch.conf --nj 30 --cmd "$train_cmd" $dir
     steps/compute_cmvn_stats.sh $dir
   done
 fi
@@ -184,11 +185,11 @@ fi
 
 # TODO: xiaohui-zhang will add lexicon cleanup at some point.
 
-if [ $stage -le 17 ]; then
-  # This will only work if you have GPUs on your system (and note that it requires
-  # you to have the queue set up the right way... see kaldi-asr.org/doc/queue.html)
-  local/chain/run_tdnn.sh
-fi
+# if [ $stage -le 17 ]; then
+#   # This will only work if you have GPUs on your system (and note that it requires
+#   # you to have the queue set up the right way... see kaldi-asr.org/doc/queue.html)
+#   local/chain/run_tdnn.sh
+# fi
 
 # The nnet3 TDNN recipe:
 # local/nnet3/run_tdnn.sh
