@@ -61,6 +61,8 @@ tdnn_affix=1d  #affix for TDNN directory, e.g. "a" or "b", in case we change the
 common_egs_dir=  # you can set this to use previously dumped egs.
 remove_egs=true
 
+xvector_nnet_dir=placeholder
+
 # End configuration section.
 echo "$0 $@"  # Print the command line for logging
 
@@ -77,13 +79,15 @@ where "nvcc" is installed.
 EOF
 fi
 
+# modify to produce xvectors instead of i-vectors
 local/nnet3/run_ivector_common.sh --stage $stage \
                                   --nj $nj \
                                   --train-set $train_set \
                                   --gmm $gmm \
                                   --online-cmvn-iextractor $online_cmvn \
                                   --num-threads-ubm $num_threads_ubm \
-                                  --nnet3-affix "$nnet3_affix"
+                                  --nnet3-affix "$nnet3_affix" \
+                                  --xvector_nnet_dir $xvector_nnet_dir
 
 
 gmm_dir=exp/$gmm
@@ -161,7 +165,7 @@ if [ $stage -le 17 ]; then
   mkdir -p $dir/configs
   cat <<EOF > $dir/configs/network.xconfig
   input dim=100 name=ivector
-  input dim=40 name=input
+  input dim=43 name=input
 
   # please note that it is important to have input layer with the name=input
   # as the layer immediately preceding the fixed-affine-layer to enable
