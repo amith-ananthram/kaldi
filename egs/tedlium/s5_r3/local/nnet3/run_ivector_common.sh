@@ -137,7 +137,7 @@ if [ $stage -le 7 ]; then
 
   for datadir in ${train_set}_sp dev test; do
     extract_xvectors.sh --cmd "$train_cmd --mem 4G" --nj 80 \
-      $xvector_nnet_dir data/xvectors/log/${datadir}_lores data/xvectors/${datadir}_lores
+      $xvector_nnet_dir data/${datadir}_lores data/xvectors/${datadir}_lores
   done
 fi 
 
