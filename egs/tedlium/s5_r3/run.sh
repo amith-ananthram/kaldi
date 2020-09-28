@@ -32,6 +32,7 @@ stage=0
 train_rnnlm=false
 train_lm=false
 
+tdnn_stage=0
 xvector_nnet_dir=placeholder
 
 . utils/parse_options.sh # accept options
@@ -189,6 +190,7 @@ if [ $stage -eq 17 ]; then
   # This will only work if you have GPUs on your system (and note that it requires
   # you to have the queue set up the right way... see kaldi-asr.org/doc/queue.html)
   local/chain/run_tdnn.sh \
+    --stage $tdnn_stage \
     --xvector_nnet_dir $xvector_nnet_dir
 fi
 

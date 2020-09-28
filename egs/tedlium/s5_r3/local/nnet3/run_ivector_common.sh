@@ -110,6 +110,10 @@ fi
 if [ $stage -le 6 ]; then 
   echo "$0: creating low-resolution MFCC features for x-vector extraction"
 
+  for datadir in ${train_set}_sp dev test; do
+    utils/copy_data_dir.sh data/$datadir data/${datadir}_lores
+  done
+
   # do volume-perturbation on the training data prior to extracting lores
   # features; this helps make trained nnets more invariant to test data volume.
   utils/data/perturb_data_dir_volume.sh data/${train_set}_sp_lores
