@@ -135,8 +135,8 @@ if [ $stage -le 7 ]; then
     [ ! -f $f ] && echo "No such file $f" && exit 1;
   done
 
-  for datadir in ${train_set}_sp dev test; do
-    extract_xvectors.sh --cmd "$train_cmd --mem 4G" --nj 80 \
+  for datadir in dev test; do # ${train_set}_sp 
+    extract_xvectors.sh --cmd "$train_cmd --mem 4G" --nj 40 --use_gpu true \
       $xvector_nnet_dir data/${datadir}_lores data/xvectors/${datadir}_lores
   done
 fi 
