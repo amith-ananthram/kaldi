@@ -135,8 +135,8 @@ if [ $stage -le 7 ]; then
     [ ! -f $f ] && echo "No such file $f" && exit 1;
   done
 
-  for datadir in dev test; do # ${train_set}_sp 
-    extract_xvectors.sh --cmd "$train_cmd --mem 4G" --nj 40 --use_gpu true \
+  for datadir in ${train_set}_sp dev test; do
+    extract_xvectors.sh --cmd "$train_cmd --mem 4G" --nj 30 \
       $xvector_nnet_dir data/${datadir}_lores data/xvectors/${datadir}_lores
   done
 fi 
@@ -161,10 +161,11 @@ if [ $stage -le 9 ]; then
   echo "$0: reducing dimensionality of x-vectors"
 
   for datadir in ${train_set}_sp dev test; do
+    ivector_dir=exp/nnet3${nnet3_affix}/ivectors_${datadir}_hires
     $train_cmd data/xvectors/log/reduce_${datadir}.log \
       ivector-normalize-length \
         "ark:ivector-subtract-global-mean data/xvectors/mean.vec scp:data/xvectors/${train_set}_sp_lores/xvector.scp ark:- | transform-vec data/xvectors/lda.mat ark:- ark:- |" \
-        exp/nnet3${nnet3_affix}/ivectors_${datadir}_hires
+        ark,scp:$ivector_dir/ivector_online.ark,$ivector_dir/ivector_online.scp
   done
 fi
 
