@@ -224,6 +224,7 @@ int main(int argc, char *argv[]) {
         }
         xvectors.CopyRowFromVec(xvector, chunk_indx)
       }
+      vector_writer.Write(utt, xvectors);
 
       frame_count += features.NumRows();
       num_success++;
