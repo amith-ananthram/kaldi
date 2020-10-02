@@ -80,13 +80,13 @@ if [ $stage -le 0 ]; then
   if $use_gpu; then
     for g in $(seq $nj); do
       $cmd --gpu 1 ${dir}/log/extract.$g.log \
-        nnet3-xvector-compute --use-gpu=yes --min-chunk-size=$min_chunk_size --chunk-size=$chunk_size --cache-capacity=${cache_capacity} \
+        nnet3-xvector-compute2 --use-gpu=yes --min-chunk-size=$min_chunk_size --chunk-size=$chunk_size --cache-capacity=${cache_capacity} \
         "$nnet" "`echo $feat | sed s/JOB/$g/g`" ark,scp:${dir}/xvector.$g.ark,${dir}/xvector.$g.scp || exit 1 &
     done
     wait
   else
     $cmd JOB=1:$nj ${dir}/log/extract.JOB.log \
-      nnet3-xvector-compute --use-gpu=no --min-chunk-size=$min_chunk_size --chunk-size=$chunk_size --cache-capacity=${cache_capacity} \
+      nnet3-xvector-compute2 --use-gpu=no --min-chunk-size=$min_chunk_size --chunk-size=$chunk_size --cache-capacity=${cache_capacity} \
       "$nnet" "$feat" ark,scp:${dir}/xvector.JOB.ark,${dir}/xvector.JOB.scp || exit 1;
   fi
 fi
