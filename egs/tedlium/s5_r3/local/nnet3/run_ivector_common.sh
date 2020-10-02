@@ -20,6 +20,7 @@ num_threads_ubm=8
 nnet3_affix=_cleaned     # affix for exp/nnet3 directory to put iVector stuff in, so it
                          # becomes exp/nnet3_cleaned or whatever.
 
+xvector_period=10
 xvector_nnet_dir=placeholder
 
 . ./cmd.sh
@@ -136,27 +137,32 @@ if [ $stage -le 7 ]; then
   done
 
   for datadir in ${train_set}_sp dev test; do
-    extract_xvectors.sh --cmd "$train_cmd --mem 4G" --nj 30 \
+    extract_xvectors.sh --cmd "$train_cmd --mem 4G" --nj 30 --chunk_size $xvector_period \
       $xvector_nnet_dir data/${datadir}_lores data/xvectors/${datadir}_lores
+
+    python split_matrix_into_vectors.py \
+      --src_xvector_scp "data/xvectors/${datadir}_lores/xvector.scp" \
+      --src_xvector_utt2spk "data/${datadir}_lores/utt2spk" \
+      --tgt_xvector_ark "data/xvectors/${datadir}_lores/xvector-split.ark" \
+      --tgt_xvector_scp "data/xvectors/${datadir}_lores/xvector-split.scp" \
+      --tgt_xvector_utt2spk "data/${datadir}_lores/utt2spk-split"
   done
 fi 
 
 if [ $stage -le 8 ]; then
-  echo "$0: training LDA to reduce x-vector dimensionality to 100"
-
-  # TODO: convert xvector matrices to vectors for LDA/pLDA training
+  echo "$0: training LDA to reduce x-vector dimensionality to 100" 
 
   # Compute the mean vector for centering the evaluation xvectors.
   $train_cmd data/xvectors/log/compute_mean.log \
-    ivector-mean scp:data/xvectors/${train_set}_sp_lores/xvector.scp \
+    ivector-mean scp:data/xvectors/${train_set}_sp_lores/xvector-split.scp \
     data/xvectors/mean.vec || exit 1;
 
   # Trains LDA based off the xvectors
   lda_dim=100
   $train_cmd data/xvectors/log/lda.log \
     ivector-compute-lda --total-covariance-factor=0.0 --dim=$lda_dim \
-    "ark:ivector-subtract-global-mean scp:data/xvectors/${train_set}_sp_lores/xvector.scp ark:- |" \
-    ark:data/${train_set}_sp_lores/utt2spk data/xvectors/lda.mat || exit 1;
+    "ark:ivector-subtract-global-mean scp:data/xvectors/${train_set}_sp_lores/xvector-split.scp ark:- |" \
+    ark:data/${train_set}_sp_lores/utt2spk-split data/xvectors/lda.mat || exit 1;
 fi
 
 if [ $stage -le 9 ]; then 
@@ -166,10 +172,15 @@ if [ $stage -le 9 ]; then
     ivector_dir=exp/nnet3${nnet3_affix}/ivectors_${datadir}_hires
     $train_cmd data/xvectors/log/reduce_${datadir}.log \
       ivector-normalize-length \
-        "ark:ivector-subtract-global-mean data/xvectors/mean.vec scp:data/xvectors/${train_set}_sp_lores/xvector.scp ark:- | transform-vec data/xvectors/lda.mat ark:- ark:- |" \
-        ark,scp:$ivector_dir/ivector_online.ark,$ivector_dir/ivector_online.scp
+        "ark:ivector-subtract-global-mean data/xvectors/mean.vec scp:data/xvectors/${train_set}_sp_lores/xvector-split.scp ark:- | transform-vec data/xvectors/lda.mat ark:- ark:- |" \
+        ark,scp:$ivector_dir/ivector_online-split.ark,$ivector_dir/ivector_online-split.scp
 
-  # TODO: convert LDA-reduced xvector vectors to matrices for TDNN training
+    echo $xvector_period > $ivector_dir/ivector_period
+
+    python merge_vectors_into_matrix.py \
+      --src_xvector_scp "$ivector_dir/ivector_online-split.scp" \
+      --tgt_xvector_ark "$ivector_dir/ivector_online.ark" \
+      --tgt_xvector_scp "$ivector_dir/ivector_online.scp"
   done
 fi
 
