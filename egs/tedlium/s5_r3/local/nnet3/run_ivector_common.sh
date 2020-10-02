@@ -162,6 +162,7 @@ if [ $stage -le 9 ]; then
 
   for datadir in ${train_set}_sp dev test; do
     ivector_dir=exp/nnet3${nnet3_affix}/ivectors_${datadir}_hires
+    mkdir -p $ivector_dir
     $train_cmd data/xvectors/log/reduce_${datadir}.log \
       ivector-normalize-length \
         "ark:ivector-subtract-global-mean data/xvectors/mean.vec scp:data/xvectors/${train_set}_sp_lores/xvector.scp ark:- | transform-vec data/xvectors/lda.mat ark:- ark:- |" \
