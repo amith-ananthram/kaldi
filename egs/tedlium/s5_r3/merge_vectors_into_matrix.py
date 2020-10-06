@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import kaldi_io
 import argparse
 import numpy as np
@@ -16,7 +18,7 @@ if __name__ == '__main__':
 		chunk_id = int(sub_utt.split('-')[-1])
 		utt2xvectors[utt][chunk_id] = vec
 
-	ark_scp_output='ark:| copy-feats --compress=true ark:- ark,scp:%s,%s' % (
+	ark_scp_output='ark:| copy-feats ark:- ark,scp:%s,%s' % (
 		args.tgt_xvector_ark, args.tgt_xvector_scp)
 	with kaldi_io.open_or_fd(ark_scp_output, 'wb') as f:
 		for utt in utt2xvectors.keys():
