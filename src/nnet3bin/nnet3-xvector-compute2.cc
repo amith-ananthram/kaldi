@@ -222,7 +222,7 @@ int main(int argc, char *argv[]) {
         } else {
           RunNnetComputation(sub_features, nnet, &compiler, &xvector);
         }
-        xvectors.CopyRowFromVec(xvector, chunk_indx)
+        xvectors.CopyRowFromVec(xvector, chunk_indx);
       }
       vector_writer.Write(utt, xvectors);
 
