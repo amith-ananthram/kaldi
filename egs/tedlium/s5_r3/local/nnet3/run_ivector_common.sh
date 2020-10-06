@@ -136,16 +136,23 @@ if [ $stage -le 7 ]; then
     [ ! -f $f ] && echo "No such file $f" && exit 1;
   done
 
-  for datadir in ${train_set}_sp dev test; do
+  for datadir in ${train_set}_sp; do # dev test
     extract_xvectors.sh --cmd "$train_cmd --mem 4G" --nj 30 --chunk_size $xvector_period \
       $xvector_nnet_dir data/${datadir}_lores data/xvectors/${datadir}_lores
 
+    num_subsets=100
     python split_matrix_into_vectors.py \
       --src_xvector_scp "data/xvectors/${datadir}_lores/xvector.scp" \
       --src_xvector_utt2spk "data/${datadir}_lores/utt2spk" \
-      --tgt_xvector_ark "data/xvectors/${datadir}_lores/xvector-split.ark" \
-      --tgt_xvector_scp "data/xvectors/${datadir}_lores/xvector-split.scp" \
-      --tgt_xvector_utt2spk "data/${datadir}_lores/utt2spk-split"
+      --tgt_xvector_ark "data/xvectors/${datadir}_lores/xvector-split" \
+      --tgt_xvector_scp "data/xvectors/${datadir}_lores/xvector-split" \
+      --tgt_xvector_utt2spk "data/${datadir}_lores/utt2spk-split" \
+      --num_subsets $num_subsets
+
+    if [ $num_subsets -gt 1 ]; then
+      for s in $(seq $num_subsets); do cat data/xvectors/${datadir}_lores/xvector-split.$s.scp; done >data/xvectors/${datadir}_lores/xvector-split.scp || exit 1;
+      for s in $(seq $num_subsets); do cat data/xvectors/${datadir}_lores/utt2spk-split.$s; done >data/xvectors/${datadir}_lores/utt2spk-split || exit 1;
+    done
   done
 fi 
 
