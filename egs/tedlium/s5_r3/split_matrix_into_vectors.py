@@ -1,9 +1,11 @@
+#!/usr/bin/env python
+
 import kaldi_io
 import argparse
 from collections import defaultdict
 
 def write_split_xvectors(tgt_xvector_ark, tgt_xvector_scp, tgt_xvector_utt2spk, utt2xvectors, utt2spk):
-	ark_scp_output='ark:| copy-feats --compress=true ark:- ark,scp:%s.ark,%s.scp' % (
+	ark_scp_output='ark:| copy-vector ark:- ark,scp:%s.ark,%s.scp' % (
 		tgt_xvector_ark, tgt_xvector_scp)
 	with kaldi_io.open_or_fd(ark_scp_output, 'wb') as f:
 		for utt in utt2xvectors.keys():
