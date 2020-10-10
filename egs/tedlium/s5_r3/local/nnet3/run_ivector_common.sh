@@ -166,6 +166,7 @@ fi
 if [ $stage -le 8 ]; then
   echo "$0: training LDA to reduce x-vector dimensionality to 100" 
 
+  # finally, because we have too many split x-vectors to train LDA in memory, we randomly sample a subset of them
   cat data/xvectors/train_cleaned_sp_lores/xvector-split.scp | awk 'BEGIN {srand()} !/^$/ { if (rand() <= .1) print $0}' > data/xvectors/train_cleaned_sp_lores/xvector-split-sampled.scp
 
   # Compute the mean vector for centering the evaluation xvectors.
@@ -185,11 +186,29 @@ if [ $stage -le 9 ]; then
   echo "$0: reducing dimensionality of x-vectors"
 
   for datadir in dev test ${train_set}_sp; do
+    if [ $datadir = ${train_set}_sp ]; then
+      num_subsets=100
+    else
+      num_subsets=1
+    fi
+
     ivector_dir=exp/nnet3${nnet3_affix}/ivectors_${datadir}_hires
-    $train_cmd data/xvectors/log/reduce_${datadir}.log \
-      ivector-normalize-length \
-        "ark:ivector-subtract-global-mean data/xvectors/mean.vec scp:data/xvectors/${train_set}_sp_lores/xvector-split.scp ark:- | transform-vec data/xvectors/lda.mat ark:- ark:- |" \
-        ark,scp:$ivector_dir/ivector_online-split.ark,$ivector_dir/ivector_online-split.scp
+
+    if [ $num_subsets -gt 1 ]; then
+      for s in $(seq $num_subsets); do
+        $train_cmd data/xvectors/log/reduce_${datadir}.log \
+          ivector-normalize-length \
+            "ark:ivector-subtract-global-mean data/xvectors/mean.vec scp:data/xvectors/${datadir}_lores/xvector-split.$s.scp ark:- | transform-vec data/xvectors/lda.mat ark:- ark:- |" \
+            ark,scp:$ivector_dir/ivector_online-split.$s.ark,$ivector_dir/ivector_online-split.$s.scp
+      done
+
+      for s in $(seq $num_subsets); do cat $ivector_dir/ivector_online-split.$s.scp; done >$ivector_dir/ivector_online-split.scp || exit 1;
+    else
+      $train_cmd data/xvectors/log/reduce_${datadir}.log \
+        ivector-normalize-length \
+          "ark:ivector-subtract-global-mean data/xvectors/mean.vec scp:data/xvectors/${datadir}_lores/xvector-split.scp ark:- | transform-vec data/xvectors/lda.mat ark:- ark:- |" \
+          ark,scp:$ivector_dir/ivector_online-split.ark,$ivector_dir/ivector_online-split.scp
+    fi
 
     echo $xvector_period > $ivector_dir/ivector_period
 
