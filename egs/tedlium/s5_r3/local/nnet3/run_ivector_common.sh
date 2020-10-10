@@ -136,7 +136,7 @@ if [ $stage -le 7 ]; then
     [ ! -f $f ] && echo "No such file $f" && exit 1;
   done
 
-  for datadir in ${train_set}_sp; do # dev test
+  for datadir in dev test ${train_set}_sp; do
     if [ $datadir = ${train_set}_sp ]; then
       nj=80
       num_subsets=100
@@ -158,24 +158,26 @@ if [ $stage -le 7 ]; then
 
     if [ $num_subsets -gt 1 ]; then
       for s in $(seq $num_subsets); do cat data/xvectors/${datadir}_lores/xvector-split.$s.scp; done >data/xvectors/${datadir}_lores/xvector-split.scp || exit 1;
-      for s in $(seq $num_subsets); do cat data/xvectors/${datadir}_lores/utt2spk-split.$s; done >data/xvectors/${datadir}_lores/utt2spk-split || exit 1;
-    done
+      for s in $(seq $num_subsets); do cat data/${datadir}_lores/utt2spk-split.$s; done >data/${datadir}_lores/utt2spk-split || exit 1;
+    fi
   done
 fi 
 
 if [ $stage -le 8 ]; then
   echo "$0: training LDA to reduce x-vector dimensionality to 100" 
 
+  cat data/xvectors/train_cleaned_sp_lores/xvector-split.scp | awk 'BEGIN {srand()} !/^$/ { if (rand() <= .1) print $0}' > data/xvectors/train_cleaned_sp_lores/xvector-split-sampled.scp
+
   # Compute the mean vector for centering the evaluation xvectors.
   $train_cmd data/xvectors/log/compute_mean.log \
-    ivector-mean scp:data/xvectors/${train_set}_sp_lores/xvector-split.scp \
+    ivector-mean scp:data/xvectors/${train_set}_sp_lores/xvector-split-sampled.scp \
     data/xvectors/mean.vec || exit 1;
 
   # Trains LDA based off the xvectors
   lda_dim=100
   $train_cmd data/xvectors/log/lda.log \
     ivector-compute-lda --total-covariance-factor=0.0 --dim=$lda_dim \
-    "ark:ivector-subtract-global-mean scp:data/xvectors/${train_set}_sp_lores/xvector-split.scp ark:- |" \
+    "ark:ivector-subtract-global-mean scp:data/xvectors/${train_set}_sp_lores/xvector-split-sampled.scp ark:- |" \
     ark:data/${train_set}_sp_lores/utt2spk-split data/xvectors/lda.mat || exit 1;
 fi
 
