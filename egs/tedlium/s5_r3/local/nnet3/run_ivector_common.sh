@@ -145,8 +145,8 @@ if [ $stage -le 7 ]; then
       num_subsets=1
     fi
 
-    #extract_xvectors.sh --cmd "$train_cmd --mem 4G" --nj 30 --chunk_size $xvector_period \
-    #  $xvector_nnet_dir data/${datadir}_lores data/xvectors/${datadir}_lores
+    extract_xvectors.sh --cmd "$train_cmd --mem 4G" --nj 30 --chunk_size $xvector_period \
+      $xvector_nnet_dir data/${datadir}_lores data/xvectors/${datadir}_lores
 
     python3 split_matrix_into_vectors.py \
       --src_xvector_scp "data/xvectors/${datadir}_lores/xvector.scp" \
@@ -193,6 +193,8 @@ if [ $stage -le 9 ]; then
     fi
 
     ivector_dir=exp/nnet3${nnet3_affix}/ivectors_${datadir}_hires
+    rm -rf $ivector_dir
+    mkdir -p $ivector_dir
 
     if [ $num_subsets -gt 1 ]; then
       for s in $(seq $num_subsets); do
