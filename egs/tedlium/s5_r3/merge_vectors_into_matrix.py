@@ -14,7 +14,7 @@ if __name__ == '__main__':
 
 	utt2xvectors = defaultdict(dict)
 	for sub_utt, vec in kaldi_io.read_vec_flt_scp(args.src_xvector_scp):
-		utt = ''.join(sub_utt.split('-')[:-1])
+		utt = '-'.join(sub_utt.split('-')[:-1])
 		chunk_id = int(sub_utt.split('-')[-1])
 		utt2xvectors[utt][chunk_id] = vec
 
