@@ -25,6 +25,8 @@ nnet_dir=exp/xvector_nnet_1a
 stage=0
 
 if [ $stage -le 0 ]; then
+  echo "$0: stage 0, preparing the VoxCeleb corpus for training"
+
   local/make_voxceleb2.pl $voxceleb2_root dev data/voxceleb2_train
   local/make_voxceleb2.pl $voxceleb2_root test data/voxceleb2_test
   # This script creates data/voxceleb1_test and data/voxceleb1_train for latest version of VoxCeleb1.
@@ -39,6 +41,8 @@ if [ $stage -le 0 ]; then
 fi
 
 if [ $stage -le 1 ]; then
+  echo "$0: stage 1, extracting MFCC and pitch features"
+
   # Make MFCCs and compute the energy-based VAD for each dataset
   for name in combined voxceleb1_test; do
     steps/make_mfcc_pitch.sh --write-utt2num-frames true --mfcc-config conf/tedlium_mfcc.conf --pitch-config conf/pitch.conf --nj 40 --cmd "$train_cmd" \
@@ -122,6 +126,9 @@ fi
 
 # Now we prepare the features to generate examples for xvector training.
 if [ $stage -le 4 ]; then
+  echo "$0: stage 4, applying CMVN"
+
+
   # This script applies CMVN and removes nonspeech frames.  Note that this is somewhat
   # wasteful, as it roughly doubles the amount of training data on disk.  After
   # creating training examples, this can be removed.
@@ -131,6 +138,8 @@ if [ $stage -le 4 ]; then
 fi
 
 if [ $stage -le 5 ]; then
+  echo "$0: stage 5, filtering out utterances that are too short"
+
   # Now, we need to remove features that are too short after removing silence
   # frames.  We want atleast 5s (500 frames) per utterance.
   min_len=400
@@ -155,12 +164,16 @@ if [ $stage -le 5 ]; then
   utils/fix_data_dir.sh data/train_combined_no_sil
 fi
 
+echo "$0: stage 6-8, training the speaker ID network"
+
 # Stages 6 through 8 are handled in run_xvector.sh
 local/nnet3/xvector/run_xvector.sh --stage $stage --train-stage -1 \
   --data data/train_combined_no_sil --nnet-dir $nnet_dir \
   --egs-dir $nnet_dir/egs
 
 if [ $stage -le 9 ]; then
+  echo "$0: stage 9, extracting x-vectors for LDA/pLDA training"
+
   # Extract x-vectors for centering, LDA, and PLDA training.
   sid/nnet3/xvector/extract_xvectors.sh --cmd "$train_cmd --mem 4G" --nj 80 \
     $nnet_dir data/train \
@@ -173,6 +186,8 @@ if [ $stage -le 9 ]; then
 fi
 
 if [ $stage -le 10 ]; then
+  echo "$0: stage 10, training LDA/pLDA"
+
   # Compute the mean vector for centering the evaluation xvectors.
   $train_cmd $nnet_dir/xvectors_train/log/compute_mean.log \
     ivector-mean scp:$nnet_dir/xvectors_train/xvector.scp \
@@ -193,6 +208,8 @@ if [ $stage -le 10 ]; then
 fi
 
 if [ $stage -le 11 ]; then
+  echo "$0: stage 11, scoring trials"
+
   $train_cmd exp/scores/log/voxceleb1_test_scoring.log \
     ivector-plda-scoring --normalize-length=true \
     "ivector-copy-plda --smoothing=0.0 $nnet_dir/xvectors_train/plda - |" \
@@ -202,6 +219,8 @@ if [ $stage -le 11 ]; then
 fi
 
 if [ $stage -le 12 ]; then
+  echo "$0: stage 12, computing EER"
+
   eer=`compute-eer <(local/prepare_for_eer.py $voxceleb1_trials exp/scores_voxceleb1_test) 2> /dev/null`
   mindcf1=`sid/compute_min_dcf.py --p-target 0.01 exp/scores_voxceleb1_test $voxceleb1_trials 2> /dev/null`
   mindcf2=`sid/compute_min_dcf.py --p-target 0.001 exp/scores_voxceleb1_test $voxceleb1_trials 2> /dev/null`
