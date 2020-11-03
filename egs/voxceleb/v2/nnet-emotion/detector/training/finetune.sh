@@ -31,9 +31,6 @@ include_noise=true
 num_noisy_samples=-1
 remove_sil=false
 
-# normalize (mean 0, std 1) MFCCs and pitch by speaker
-normalize=false
-
 # controls the size of example generation used
 # for nnet training (filters out utterances shorter
 # than min_num_frames FYI!)
@@ -51,15 +48,12 @@ epochs=6
 # if training fails, can restart with this parameter
 train_stage=-1
 
+base=placeholder
+
 # used to name experiment output, defaults to runtime
 variant=$(date '+%Y%m%d%H%M%S')
 
 . ./utils/parse_options.sh
-
-# this should be set to our input dimensionality
-# (ie # of MFCC + pitch features); it's 30 in the
-# default vox2/run.sh training protocol
-NUM_INPUT_DIMENSIONS=33
 
 root="${BASE_DIR}"
 mfccdir="$root/mfcc"
@@ -91,7 +85,6 @@ log "num_target_dimensions=$num_target_dimensions"
 log "target_emotions_mode=$target_emotions_mode"
 log "target_emotions_config=$target_emotions_config"
 log "include_noise=$include_noise"
-log "normalize=$normalize"
 log "num_noisy_samples=$num_noisy_samples"
 log "remove_sil=$remove_sil"
 log "min_num_frames=$min_num_frames"
@@ -101,6 +94,20 @@ log "num_layers=$num_layers"
 log "first_six_lr=$first_six_lr"
 log "dropout=$dropout"
 log "epochs=$epochs"
+
+if [ $base -eq 1 ]; then 
+	base_model=vox2_base1.raw
+	mfcc_conf=conf/mfcc.conf
+	num_input_dimensions=33
+	log "using Vox2 model 1..."
+elif [ $base -eq 2 ]; then
+	base_model=vo2_base2.raw
+	mfcc_conf=conf/tedlium_mfcc.conf
+	num_input_dimension=43
+	log "using Vox2 model 2..."
+else
+	error "Unsupported base=$base"
+fi
 
 if [ $stage -le 0 ]; then
 	stage_details="making directory structure"
@@ -125,7 +132,7 @@ if [ $stage -le 0 ]; then
 			chmod -R 775 $dir
 		fi
 	done
-	cp vox2_base.raw $MODEL_INPUT_DIR
+	cp $base_model $MODEL_INPUT_DIR
 	log_stage_end
 fi
 
@@ -169,7 +176,7 @@ if [ $stage -le 1 ]; then
 		# please note that it is important to have input layer with the name=input
 
 		# The frame-level layers
-		input dim=${NUM_INPUT_DIMENSIONS} name=input
+		input dim=${num_input_dimensions} name=input
 		relu-batchnorm-layer name=tdnn1 input=Append(-2,-1,0,1,2) dim=512
 		relu-batchnorm-layer name=tdnn2 input=Append(-2,0,2) dim=512
 		relu-batchnorm-layer name=tdnn3 input=Append(-3,0,3) dim=512
@@ -242,7 +249,7 @@ if [ $stage -le 3 ]; then
 	stage_details="extracting MFCCs and VAD"
 	log_stage_start
 
-	steps/make_mfcc_pitch.sh --write-utt2num-frames true --mfcc-config conf/mfcc.conf --pitch-config conf/pitch.conf --nj 40 --cmd "$train_cmd" \
+	steps/make_mfcc_pitch.sh --write-utt2num-frames true --mfcc-config $mfcc_conf --pitch-config conf/pitch.conf --nj 40 --cmd "$train_cmd" \
 		${DATA_OUTPUT_COMBINED_DIR} ${root}/exp/make_mfcc $mfccdir
 	utils/fix_data_dir.sh ${DATA_OUTPUT_COMBINED_DIR}
 	sid/compute_vad_decision.sh --nj 40 --cmd "$train_cmd" \
@@ -253,7 +260,7 @@ if [ $stage -le 3 ]; then
 fi 
 
 if [ $stage -le 4 ]; then 
-	stage_details="adding noise + normalizing"
+	stage_details="adding noise"
 	log_stage_start
 
 	if $include_noise; then 
@@ -312,7 +319,7 @@ if [ $stage -le 4 ]; then
 		# Make MFCCs for the augmented data.  Note that we do not compute a new
     	# vad.scp file here.  Instead, we use the vad.scp from the clean version of
     	# the list.
-    	steps/make_mfcc_pitch.sh --mfcc-config conf/mfcc.conf --pitch-config conf/pitch.conf --nj 40 --cmd "$train_cmd" \
+    	steps/make_mfcc_pitch.sh --mfcc-config $mfcc_conf --pitch-config conf/pitch.conf --nj 40 --cmd "$train_cmd" \
       		${DATA_OUTPUT_DIR}/train_aug_sub ${root}/exp/make_mfcc $mfccdir
       	utils/combine_data.sh ${DATA_OUTPUT_DIR}/train_combined_temp ${DATA_OUTPUT_DIR}/train_aug_sub ${DATA_OUTPUT_COMBINED_DIR}
     	rm -rf ${DATA_OUTPUT_COMBINED_DIR}
@@ -320,30 +327,6 @@ if [ $stage -le 4 ]; then
     	rm -rf ${DATA_OUTPUT_DIR}/train_combined_temp
 	else
 		log "include_noise=$include_noise, doing nothing."
-	fi
-
-	if $normalize; then 
-		log "normalizing!"
-		
-		nnet-emotion/detector/training/generate_cmvn_inputs.py \
-			--source_utt2spk ${DATA_OUTPUT_COMBINED_DIR}/utt2spk \
-			--output_dir ${DATA_OUTPUT_COMBINED_DIR}
-
-		utils/utt2spk_to_spk2utt.pl "$DATA_OUTPUT_COMBINED_DIR/utt2spk-norm" > "$DATA_OUTPUT_COMBINED_DIR/spk2utt-norm"
-
-		compute-cmvn-stats --spk2utt=ark:$DATA_OUTPUT_COMBINED_DIR/spk2utt-norm \
-			scp:$DATA_OUTPUT_COMBINED_DIR/feats.scp \
-			ark:$DATA_OUTPUT_COMBINED_DIR/cmvn.ark || exit 1;
-
-		apply-cmvn --utt2spk=ark:$DATA_OUTPUT_COMBINED_DIR/utt2spk-norm \
-			ark:$DATA_OUTPUT_COMBINED_DIR/cmvn.ark \
-			scp:$DATA_OUTPUT_COMBINED_DIR/feats.scp \
-			ark,scp:$DATA_OUTPUT_COMBINED_DIR/normed-feats.ark,$DATA_OUTPUT_COMBINED_DIR/normed-feats.scp || exit 1;
-
-		mv $DATA_OUTPUT_COMBINED_DIR/feats.scp $DATA_OUTPUT_COMBINED_DIR/unnormed-feats.scp
-		mv $DATA_OUTPUT_COMBINED_DIR/normed-feats.scp $DATA_OUTPUT_COMBINED_DIR/feats.scp
-	else
-		log "normalize=$normalize, doing nothing."
 	fi
 
 	log_stage_end
@@ -354,14 +337,9 @@ if [ $stage -le 5 ]; then
 	log_stage_start
 
 	rm -rf ${DATA_OUTPUT_DIR}/train_combined_no_sil
-	if $remove_sil; then 
-		local/nnet3/xvector/prepare_feats_for_egs.sh --nj 40 --cmd "$train_cmd" \
+	local/nnet3/xvector/prepare_feats_for_egs.sh --nj 40 --remove_sil $remove_sil --cmd "$train_cmd" \
   			${DATA_OUTPUT_COMBINED_DIR} ${DATA_OUTPUT_DIR}/train_combined_no_sil ${root}/exp/train_combined_no_sil
   		utils/fix_data_dir.sh ${DATA_OUTPUT_DIR}/train_combined_no_sil
-	else
-		log "remove_sil=$remove_sil, doing nothing."
-		cp -r ${DATA_OUTPUT_COMBINED_DIR} ${DATA_OUTPUT_DIR}/train_combined_no_sil
-	fi
 
 	log_stage_end
 fi

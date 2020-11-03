@@ -12,11 +12,23 @@ target_emotions_config=placeholder
 chunk_size=-1
 test_set=all_iemocap
 normalize=false
+remove_sil=false
+base=placeholder
 
 . ./utils/parse_options.sh
 
 BASE_DIR="nnet-emotion/evaluate"
 MFCC_DIR="${BASE_DIR}/mfcc"
+
+if [ $base -eq 1 ]; then 
+	mfcc_conf=conf/mfcc.conf
+	log "using Vox2 model 1..."
+elif [ $base -eq 2 ]; then
+	mfcc_conf=conf/tedlium_mfcc.conf
+	log "using Vox2 model 2..."
+else
+	error "Unsupported base=$base"
+fi
 
 # prepare the corpus for feature extraction
 if [ $stage -eq 0 ]; then
@@ -44,34 +56,12 @@ if [ $stage -eq 1 ]; then
 	echo "Stage $stage: start"
 	for session in 1 2 3 4 5; do
 		session_input_path="${BASE_DIR}/iemocap${session}" 
-		steps/make_mfcc_pitch.sh --write-utt2num-frames true --mfcc-config conf/mfcc.conf --pitch-config conf/pitch.conf --nj 40 --cmd "$train_cmd" \
+		steps/make_mfcc_pitch.sh --write-utt2num-frames true --mfcc-config $mfcc_conf --pitch-config conf/pitch.conf --nj 40 --cmd "$train_cmd" \
 			$session_input_path ${BASE_DIR}/exp/make_mfcc $MFCC_DIR
 		utils/fix_data_dir.sh $session_input_path
 		sid/compute_vad_decision.sh --nj 40 --cmd "$train_cmd" \
       		$session_input_path ${BASE_DIR}/exp/make_vad $MFCC_DIR
       	utils/fix_data_dir.sh $session_input_path
-
-		if $normalize; then 
-			echo "normalizing $session!"
-
-			nnet-emotion/detector/training/generate_cmvn_inputs.py \
-				--source_utt2spk $session_input_path/utt2spk \
-				--output_dir $session_input_path
-
-			utils/utt2spk_to_spk2utt.pl "$session_input_path/utt2spk-norm" > "$session_input_path/spk2utt-norm"
-
-			compute-cmvn-stats --spk2utt=ark:$session_input_path/spk2utt-norm \
-				scp:$session_input_path/feats.scp \
-				ark:$session_input_path/cmvn.ark || exit 1;
-
-			apply-cmvn --utt2spk=ark:$session_input_path/utt2spk-norm \
-				ark:$session_input_path/cmvn.ark \
-				scp:$session_input_path/feats.scp \
-				ark,scp:$session_input_path/normed-feats.ark,$session_input_path/normed-feats.scp || exit 1;
-
-			mv $session_input_path/feats.scp $session_input_path/unnormed-feats.scp
-			mv $session_input_path/normed-feats.scp $session_input_path/feats.scp
-		fi
 	done
 	utils/combine_data.sh "${BASE_DIR}/all_iemocap" "${BASE_DIR}/iemocap1" "${BASE_DIR}/iemocap2" "${BASE_DIR}/iemocap3" "${BASE_DIR}/iemocap4" "${BASE_DIR}/iemocap5"
 	echo "Stage $stage: end"
@@ -81,10 +71,19 @@ fi
 if [ $stage -eq 2 ]; then
 	echo "Stage $stage: generating predictions for specified model"
 	mkdir -p "${BASE_DIR}/predictions"
-	if [ $chunk_size -eq -1 ]; then
-		nnet3-xvector-compute-batched --use-gpu=yes "${model_path}/final.raw" scp:${BASE_DIR}/$test_set/feats.scp ark:${BASE_DIR}/predictions/iemocap_predictions.ark
+
+	if [ $remove_sil ]; then
+		echo "removing silence!"
+		feat="ark:apply-cmvn-sliding --norm-vars=false --center=true --cmn-window=300 scp:${BASE_DIR}/$test_set/feats.scp ark:- | select-voiced-frames ark:- scp,s,cs:${BASE_DIR}/$test_set/vad.scp ark:- |"
 	else
-		nnet3-xvector-compute-batched --use-gpu=yes --chunk-size=$chunk_size "${model_path}/final.raw" scp:${BASE_DIR}/$test_set/feats.scp ark:${BASE_DIR}/predictions/iemocap_predictions.ark
+		echo "not removing silence!"
+		feat="ark:apply-cmvn-sliding --norm-vars=false --center=true --cmn-window=300 scp:${BASE_DIR}/$test_set/feats.scp ark:- |"
+	fi
+
+	if [ $chunk_size -eq -1 ]; then
+		nnet3-xvector-compute-batched --use-gpu=yes "${model_path}/final.raw" $feat ark:${BASE_DIR}/predictions/iemocap_predictions.ark
+	else
+		nnet3-xvector-compute-batched --use-gpu=yes --chunk-size=$chunk_size "${model_path}/final.raw" $feat ark:${BASE_DIR}/predictions/iemocap_predictions.ark
 	fi
 	echo "Stage $stage: end"
 fi
