@@ -33,6 +33,7 @@ train_rnnlm=false
 train_lm=false
 
 tdnn_stage=0
+train_stage=-10
 xvector_nnet_dir=placeholder
 
 . utils/parse_options.sh # accept options
@@ -191,6 +192,7 @@ if [ $stage -eq 17 ]; then
   # you to have the queue set up the right way... see kaldi-asr.org/doc/queue.html)
   local/chain/run_tdnn.sh \
     --stage $tdnn_stage \
+    --train_stage $train_stage \
     --xvector_nnet_dir $xvector_nnet_dir
 fi
 

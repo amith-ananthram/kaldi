@@ -221,8 +221,8 @@ if [ $stage -le 18 ]; then
     --trainer.num-chunk-per-minibatch 64 \
     --trainer.frames-per-iter 5000000 \
     --trainer.num-epochs 6 \
-    --trainer.optimization.num-jobs-initial 3 \
-    --trainer.optimization.num-jobs-final 12 \
+    --trainer.optimization.num-jobs-initial 1 \
+    --trainer.optimization.num-jobs-final 1 \
     --trainer.optimization.initial-effective-lrate 0.00025 \
     --trainer.optimization.final-effective-lrate 0.000025 \
     --trainer.max-param-change 2.0 \
@@ -230,6 +230,7 @@ if [ $stage -le 18 ]; then
     --feat-dir $train_data_dir \
     --tree-dir $tree_dir \
     --lat-dir $lat_dir \
+    --use-gpu "wait" \
     --dir $dir
 fi
 

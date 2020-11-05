@@ -170,58 +170,33 @@ int main(int argc, char *argv[]) {
         continue;
       }
       int32 num_rows = features.NumRows(),
-            feat_dim = features.NumCols(),
-            this_chunk_size = chunk_size;
-      if (!pad_input && num_rows < min_chunk_size) {
-        KALDI_WARN << "Minimum chunk size of " << min_chunk_size
-                   << " is greater than the number of rows "
-                   << "in utterance: " << utt;
-        num_fail++;
-        continue;
-      } else if (num_rows < chunk_size) {
-        KALDI_LOG << "Chunk size of " << chunk_size << " is greater than "
-                  << "the number of rows in utterance: " << utt
-                  << ", using chunk size  of " << num_rows;
-        this_chunk_size = num_rows;
-      } else if (chunk_size == -1) {
-        this_chunk_size = num_rows;
-      }
+            feat_dim = features.NumCols();
 
       int32 num_chunks = ceil(
-        num_rows / static_cast<BaseFloat>(this_chunk_size));
+        num_rows / static_cast<BaseFloat>(chunk_size));
       Matrix<BaseFloat> xvectors(num_chunks, xvector_dim);
-      BaseFloat tot_weight = 0.0;
 
-      // Iterate over the feature chunks.
+      // Iterate over the feature chunks.  The chunk_indx indexes the center 
+      // of our extraction window for our x-vector (which, if needed, is 
+      // zero padded on the left and the right)
       for (int32 chunk_indx = 0; chunk_indx < num_chunks; chunk_indx++) {
-        // If we're nearing the end of the input, we may need to shift the
-        // offset back so that we can get this_chunk_size frames of input to
-        // the nnet.
-        int32 offset = std::min(
-          this_chunk_size, num_rows - chunk_indx * this_chunk_size);
-        if (!pad_input && offset < min_chunk_size)
-          continue;
-        SubMatrix<BaseFloat> sub_features(
-          features, chunk_indx * this_chunk_size, offset, 0, feat_dim);
-        Vector<BaseFloat> xvector;
-        tot_weight += offset;
+        int32 chunk_center = chunk_indx * chunk_size;
+        int32 chunk_start = chunk_center - (chunk_size - 1) / 2;
+        int32 chunk_end = chunk_center + (chunk_size - 1) / 2;
 
-        // Pad input if the offset is less than the minimum chunk size
-        if (pad_input && offset < min_chunk_size) {
-          Matrix<BaseFloat> padded_features(min_chunk_size, feat_dim);
-          int32 left_context = (min_chunk_size - offset) / 2;
-          int32 right_context = min_chunk_size - offset - left_context;
-          for (int32 i = 0; i < left_context; i++) {
-            padded_features.Row(i).CopyFromVec(sub_features.Row(0));
+        Vector<BaseFloat> xvector;
+        Matrix<BaseFloat> sub_features(chunk_size, feat_dim);
+        for (int32 i = chunk_start; i <= chunk_end; i++) {
+          if (i < 0) {
+            sub_features.Row(i - chunk_start).CopyFromVec(features.Row(0));
+          else if (i >= num_rows) {
+            sub_features.Row(i - chunk_start).CopyFromVec(features.Row(num_rows - 1));
+          } else {
+            sub_features.Row(i - chunk_start).CopyFromVec(features.Row(i));
           }
-          for (int32 i = 0; i < right_context; i++) {
-            padded_features.Row(min_chunk_size - i - 1).CopyFromVec(sub_features.Row(offset - 1));
-          }
-          padded_features.Range(left_context, offset, 0, feat_dim).CopyFromMat(sub_features);
-          RunNnetComputation(padded_features, nnet, &compiler, &xvector);
-        } else {
-          RunNnetComputation(sub_features, nnet, &compiler, &xvector);
         }
+        RunNnetComputation(sub_features, nnet, &compiler, &xvector);
+
         xvectors.CopyRowFromVec(xvector, chunk_indx);
       }
       vector_writer.Write(utt, xvectors);

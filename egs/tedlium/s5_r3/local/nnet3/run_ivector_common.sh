@@ -108,29 +108,29 @@ if [ $stage -le 5 ]; then
   done
 fi
 
-if [ $stage -le 6 ]; then 
-  echo "$0: creating low-resolution MFCC features for x-vector extraction"
+# if [ $stage -le 6 ]; then 
+#   echo "$0: creating low-resolution MFCC features for x-vector extraction"
 
-  for datadir in ${train_set}_sp dev test; do
-    utils/copy_data_dir.sh data/$datadir data/${datadir}_lores
-  done
+#   for datadir in ${train_set}_sp dev test; do
+#     utils/copy_data_dir.sh data/$datadir data/${datadir}_lores
+#   done
 
-  # do volume-perturbation on the training data prior to extracting lores
-  # features; this helps make trained nnets more invariant to test data volume.
-  utils/data/perturb_data_dir_volume.sh data/${train_set}_sp_lores
+#   # do volume-perturbation on the training data prior to extracting lores
+#   # features; this helps make trained nnets more invariant to test data volume.
+#   utils/data/perturb_data_dir_volume.sh data/${train_set}_sp_lores
 
-  for datadir in ${train_set}_sp dev test; do
-    steps/make_mfcc_pitch.sh --nj $nj --mfcc-config conf/mfcc_lores.conf \
-      --cmd "$train_cmd" data/${datadir}_lores data/${datadir}_lores/log data/${datadir}_lores/mfcc
-    steps/compute_cmvn_stats.sh data/${datadir}_lores
-    compute_vad_decision.sh --nj 40 --cmd "$train_cmd" \
-      data/${datadir}_lores data/${datadir}_lores/log/make_vad data/${datadir}_lores/mfcc
-    utils/fix_data_dir.sh data/${datadir}_lores
-  done
-fi
+#   for datadir in ${train_set}_sp dev test; do
+#     steps/make_mfcc_pitch.sh --nj $nj --mfcc-config conf/mfcc_lores.conf \
+#       --cmd "$train_cmd" data/${datadir}_lores data/${datadir}_lores/log data/${datadir}_lores/mfcc
+#     steps/compute_cmvn_stats.sh data/${datadir}_lores
+#     compute_vad_decision.sh --nj 40 --cmd "$train_cmd" \
+#       data/${datadir}_lores data/${datadir}_lores/log/make_vad data/${datadir}_lores/mfcc
+#     utils/fix_data_dir.sh data/${datadir}_lores
+#   done
+# fi
 
 if [ $stage -le 7 ]; then
-  echo "$0: extracting x-vectors from low-res MFCC features"
+  echo "$0: extracting x-vectors from high-res MFCC features"
 
   for f in $xvector_nnet_dir/final.raw $xvector_nnet_dir/min_chunk_size $xvector_nnet_dir/max_chunk_size $xvector_nnet_dir/extract.config; do
     [ ! -f $f ] && echo "No such file $f" && exit 1;
@@ -146,19 +146,19 @@ if [ $stage -le 7 ]; then
     fi
 
     extract_xvectors.sh --cmd "$train_cmd --mem 4G" --nj 30 --chunk_size $xvector_period \
-      $xvector_nnet_dir data/${datadir}_lores data/xvectors/${datadir}_lores
+      $xvector_nnet_dir data/${datadir}_hires data/xvectors/${datadir}_hires
 
     python3 split_matrix_into_vectors.py \
-      --src_xvector_scp "data/xvectors/${datadir}_lores/xvector.scp" \
-      --src_xvector_utt2spk "data/${datadir}_lores/utt2spk" \
-      --tgt_xvector_ark "data/xvectors/${datadir}_lores/xvector-split" \
-      --tgt_xvector_scp "data/xvectors/${datadir}_lores/xvector-split" \
-      --tgt_xvector_utt2spk "data/${datadir}_lores/utt2spk-split" \
+      --src_xvector_scp "data/xvectors/${datadir}_hires/xvector.scp" \
+      --src_xvector_utt2spk "data/${datadir}_hires/utt2spk" \
+      --tgt_xvector_ark "data/xvectors/${datadir}_hires/xvector-split" \
+      --tgt_xvector_scp "data/xvectors/${datadir}_hires/xvector-split" \
+      --tgt_xvector_utt2spk "data/${datadir}_hires/utt2spk-split" \
       --num_subsets $num_subsets
 
     if [ $num_subsets -gt 1 ]; then
-      for s in $(seq $num_subsets); do cat data/xvectors/${datadir}_lores/xvector-split.$s.scp; done >data/xvectors/${datadir}_lores/xvector-split.scp || exit 1;
-      for s in $(seq $num_subsets); do cat data/${datadir}_lores/utt2spk-split.$s; done >data/${datadir}_lores/utt2spk-split || exit 1;
+      for s in $(seq $num_subsets); do cat data/xvectors/${datadir}_hires/xvector-split.$s.scp; done >data/xvectors/${datadir}_hires/xvector-split.scp || exit 1;
+      for s in $(seq $num_subsets); do cat data/${datadir}_hires/utt2spk-split.$s; done >data/${datadir}_hires/utt2spk-split || exit 1;
     fi
   done
 fi 
@@ -167,19 +167,19 @@ if [ $stage -le 8 ]; then
   echo "$0: training LDA to reduce x-vector dimensionality to 100" 
 
   # finally, because we have too many split x-vectors to train LDA in memory, we randomly sample a subset of them
-  cat data/xvectors/train_cleaned_sp_lores/xvector-split.scp | awk 'BEGIN {srand()} !/^$/ { if (rand() <= .1) print $0}' > data/xvectors/train_cleaned_sp_lores/xvector-split-sampled.scp
+  # cat data/xvectors/train_cleaned_sp_hires/xvector-split.scp | awk 'BEGIN {srand()} !/^$/ { if (rand() <= .1) print $0}' > data/xvectors/train_cleaned_sp_hires/xvector-split-sampled.scp
 
   # Compute the mean vector for centering the evaluation xvectors.
   $train_cmd data/xvectors/log/compute_mean.log \
-    ivector-mean scp:data/xvectors/${train_set}_sp_lores/xvector-split-sampled.scp \
+    ivector-mean scp:data/xvectors/${train_set}_sp_hires/xvector-split.scp \
     data/xvectors/mean.vec || exit 1;
 
   # Trains LDA based off the xvectors
   lda_dim=100
   $train_cmd data/xvectors/log/lda.log \
     ivector-compute-lda --total-covariance-factor=0.0 --dim=$lda_dim \
-    "ark:ivector-subtract-global-mean scp:data/xvectors/${train_set}_sp_lores/xvector-split-sampled.scp ark:- |" \
-    ark:data/${train_set}_sp_lores/utt2spk-split data/xvectors/lda.mat || exit 1;
+    "ark:ivector-subtract-global-mean scp:data/xvectors/${train_set}_sp_hires/xvector-split.scp ark:- |" \
+    ark:data/${train_set}_sp_hires/utt2spk-split data/xvectors/lda.mat || exit 1;
 fi
 
 if [ $stage -le 9 ]; then 
@@ -200,7 +200,7 @@ if [ $stage -le 9 ]; then
       for s in $(seq $num_subsets); do
         $train_cmd data/xvectors/log/reduce_${datadir}.log \
           ivector-normalize-length \
-            "ark:ivector-subtract-global-mean data/xvectors/mean.vec scp:data/xvectors/${datadir}_lores/xvector-split.$s.scp ark:- | transform-vec data/xvectors/lda.mat ark:- ark:- |" \
+            "ark:ivector-subtract-global-mean data/xvectors/mean.vec scp:data/xvectors/${datadir}_hires/xvector-split.$s.scp ark:- | transform-vec data/xvectors/lda.mat ark:- ark:- |" \
             ark,scp:$ivector_dir/ivector_online-split.$s.ark,$ivector_dir/ivector_online-split.$s.scp
       done
 
@@ -208,7 +208,7 @@ if [ $stage -le 9 ]; then
     else
       $train_cmd data/xvectors/log/reduce_${datadir}.log \
         ivector-normalize-length \
-          "ark:ivector-subtract-global-mean data/xvectors/mean.vec scp:data/xvectors/${datadir}_lores/xvector-split.scp ark:- | transform-vec data/xvectors/lda.mat ark:- ark:- |" \
+          "ark:ivector-subtract-global-mean data/xvectors/mean.vec scp:data/xvectors/${datadir}_hires/xvector-split.scp ark:- | transform-vec data/xvectors/lda.mat ark:- ark:- |" \
           ark,scp:$ivector_dir/ivector_online-split.ark,$ivector_dir/ivector_online-split.scp
     fi
 
