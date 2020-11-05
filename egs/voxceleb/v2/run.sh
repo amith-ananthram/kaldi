@@ -13,7 +13,10 @@
 set -e
 mfccdir=`pwd`/mfcc
 vaddir=`pwd`/mfcc
+stage=9
+train_stage=-1
 
+. ./utils/parse_options.sh
 
 # The trials file is downloaded by local/make_voxceleb1_v2.pl.
 voxceleb1_trials=data/voxceleb1_test/trials
@@ -21,8 +24,6 @@ voxceleb1_root=corpora/voxceleb/vox1
 voxceleb2_root=corpora/voxceleb/vox2
 nnet_dir=exp/xvector_nnet_1a
 # musan_root=/export/corpora/JHU/musan
-
-stage=0
 
 if [ $stage -le 0 ]; then
   echo "$0: stage 0, preparing the VoxCeleb corpus for training"
@@ -133,7 +134,7 @@ if [ $stage -le 4 ]; then
   # wasteful, as it roughly doubles the amount of training data on disk.  After
   # creating training examples, this can be removed.
   local/nnet3/xvector/prepare_feats_for_egs.sh --nj 40 --cmd "$train_cmd" \
-    data/train_combined data/train_combined_no_sil exp/train_combined_no_sil
+    data/combined data/train_combined_no_sil exp/train_combined_no_sil
   utils/fix_data_dir.sh data/train_combined_no_sil
 fi
 
@@ -167,7 +168,7 @@ fi
 echo "$0: stage 6-8, training the speaker ID network"
 
 # Stages 6 through 8 are handled in run_xvector.sh
-local/nnet3/xvector/run_xvector.sh --stage $stage --train-stage -1 \
+local/nnet3/xvector/run_xvector.sh --stage $stage --train-stage $train_stage \
   --data data/train_combined_no_sil --nnet-dir $nnet_dir \
   --egs-dir $nnet_dir/egs
 
@@ -176,7 +177,7 @@ if [ $stage -le 9 ]; then
 
   # Extract x-vectors for centering, LDA, and PLDA training.
   sid/nnet3/xvector/extract_xvectors.sh --cmd "$train_cmd --mem 4G" --nj 80 \
-    $nnet_dir data/train \
+    $nnet_dir data/combined \
     $nnet_dir/xvectors_train
 
   # Extract x-vectors used in the evaluation.
@@ -198,11 +199,11 @@ if [ $stage -le 10 ]; then
   $train_cmd $nnet_dir/xvectors_train/log/lda.log \
     ivector-compute-lda --total-covariance-factor=0.0 --dim=$lda_dim \
     "ark:ivector-subtract-global-mean scp:$nnet_dir/xvectors_train/xvector.scp ark:- |" \
-    ark:data/train/utt2spk $nnet_dir/xvectors_train/transform.mat || exit 1;
+    ark:data/combined/utt2spk $nnet_dir/xvectors_train/transform.mat || exit 1;
 
   # Train the PLDA model.
   $train_cmd $nnet_dir/xvectors_train/log/plda.log \
-    ivector-compute-plda ark:data/train/spk2utt \
+    ivector-compute-plda ark:data/combined/spk2utt \
     "ark:ivector-subtract-global-mean scp:$nnet_dir/xvectors_train/xvector.scp ark:- | transform-vec $nnet_dir/xvectors_train/transform.mat ark:- ark:- | ivector-normalize-length ark:-  ark:- |" \
     $nnet_dir/xvectors_train/plda || exit 1;
 fi
