@@ -8,7 +8,7 @@ from collections import Counter, defaultdict
 
 CREMA_D_PATH = 'nnet-emotion/cremad/outputs/data/all_cremad/'
 MELD_PATH = 'nnet-emotion/meld/outputs/data/all_meld/'
-IEMOCAP_PATH = 'nnet-emotion/iemocap/all_iemocap/'
+IEMOCAP_PATH = 'nnet-emotion/evaluate/all_iemocap/'
 
 VALID_TRAINING_CORPORA = set([
 	'cremad',
@@ -202,21 +202,22 @@ def write_output_files(prefix, utterances, has_speech, has_text, output_dir):
 	print("%s dimensions" % prefix)
 	print(dimensions)
 
-def write_trials_file(train_utterances, test_utterances, output_dir):
+def write_trials_file(test_utterances, output_dir):
 	num_target = 0
 	num_nontarget = 0
 	with open('%s/trials' % output_dir, 'w') as f:
-		for train_utterance_id in sorted(train_utterances.keys()):
-			for test_utterance_id in sorted(test_utterances.keys()):
-				assert not train_utterance_id == test_utterance_id
+		for test_utterance1 in sorted(test_utterances.keys()):
+			for test_utterance2 in sorted(test_utterances.keys()):
+				if test_utterance1 == test_utterance2:
+					continue
 					
-				if train_utterances[train_utterance_id]['emotion'] == test_utterances[test_utterance_id]['emotion']:
+				if test_utterances[test_utterance1]['emotion'] == test_utterances[test_utterance2]['emotion']:
 					label = 'target'
 					num_target += 1
 				else:
 					label = 'nontarget'
 					num_nontarget += 1
-				f.write('%s %s %s\n' % (train_utterance_id, test_utterance_id, label))
+				f.write('%s %s %s\n' % (test_utterance1, test_utterance2, label))
 	print("target: %s, nontarget: %s" % (num_target, num_nontarget))
 
 
@@ -253,4 +254,4 @@ test_utterances = get_utterances(speech_dir, text_dir, test_corpora)
 
 write_output_files('train', train_utterances, speech_dir != 'none', text_dir != 'none', output_dir)
 write_output_files('test', test_utterances, speech_dir != 'none', text_dir != 'none', output_dir)
-write_trials_file(train_utterances, test_utterances, output_dir)
+write_trials_file(test_utterances, output_dir)

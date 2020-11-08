@@ -14,11 +14,6 @@ set -e
 #	MELD, 4/5 of IEMOCAP
 # 	CremaD/DD, MELD, 4/5 of IEMOCAP
 
-# questions:
-#	should we be subtracting corpus-level means?
-# 	they use the mean vectors for the "train" vectors for EER, should we?
-#		(fwiw they don't for voxceleb)
-
 variant=placeholder
 speech_dir=placeholder
 text_dir=placeholder
@@ -58,6 +53,7 @@ if [ $stage -le 3 ]; then
 	  ark:$work_dir/train_utt2spk $work_dir/train_transform.mat || exit 1;
 fi
 
+# support using different labeling schemes here
 if [ $stage -le 4 ]; then
 	echo "Training PLDA..."
 	$train_cmd $work_dir/log/plda.log \
