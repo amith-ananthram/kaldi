@@ -148,7 +148,7 @@ def get_iemocap_utterances(subsets, config, emotion_mapper):
 
 # TODO: share between generate_iemocap_inputs and generate_corpora_inputs
 def generate_utt2spk(emotion_mapper, utterances, output_data_dir):
-	emotions_to_id = {emotion:idx for idx, emotion in enumerate(sorted(emotion_mapper.values()))}
+	emotions_to_id = {emotion:idx for idx, emotion in enumerate(sorted(set(emotion_mapper.values())))}
 	with open(os.path.join(output_data_dir, UTT2SPK_FILE), 'w') as f:
 		for utterance in sorted(utterances, key=lambda utterance: utterance.get_id()):
 			f.write("%s %s\n" % (utterance.get_id(), emotions_to_id[utterance.get_emotion()]))

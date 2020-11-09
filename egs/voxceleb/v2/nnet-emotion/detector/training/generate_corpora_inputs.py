@@ -128,7 +128,7 @@ def get_cremad_utterances(config, emotion_mapper):
 				if cremad_emotion == votes[np.argmax(levels)]:
 					general_emotions.append(general_emotion)
 
-			mapped_emotions = list(filter(lambda general_emotion: general_emotion in emotion_mapper, general_emotions))	
+			mapped_emotions = list(set(map(lambda general_emotion: emotion_mapper[general_emotion], general_emotions)))	
 			if len(mapped_emotions) > 1:
 				raise Exception("Multiple specified general emotions map to the specified CremaD emotion: %s, %s" % (general_emotions, votes[np.argmax(levels)]))
 
@@ -206,7 +206,7 @@ def get_iemocap_utterances(subsets, config, emotion_mapper):
 	return utterances
 
 def generate_utt2spk(emotion_mapper, utterances, output_data_dir):
-	emotions_to_id = {emotion:idx for idx, emotion in enumerate(sorted(emotion_mapper.values()))}
+	emotions_to_id = {emotion:idx for idx, emotion in enumerate(sorted(set(emotion_mapper.values())))}
 	with open(os.path.join(output_data_dir, UTT2SPK_FILE), 'w') as f:
 		for utterance in sorted(utterances, key=lambda utterance: utterance.get_id()):
 			f.write("%s %s\n" % (utterance.get_id(), emotions_to_id[utterance.get_emotion()]))
@@ -259,6 +259,9 @@ if __name__ == '__main__':
 			emotions = [config_element]
 		for emotion in emotions:
 			for train_corpus in train_corpora:
+				if target_emotions_mode == 'collapse':
+					continue
+
 				if train_corpus == 'cremad':
 					assert emotion in CREMAD_EMOTIONS
 				else:
