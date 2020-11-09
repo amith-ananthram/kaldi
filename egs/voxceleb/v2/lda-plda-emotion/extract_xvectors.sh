@@ -9,6 +9,7 @@ model_path=placeholder
 num_layers=placeholder
 corpus_dir=placeholder
 output_base_dir=placeholder
+output_dir=placeholder
 
 chunk_size=-1
 
@@ -31,8 +32,8 @@ do
 	echo "output-node name=output input=tdnn${layer}.affine" > $work_dir/extract.config
 	cp $model_path $work_dir/final.raw
 
-	out_dir="$output_base_dir/$layer"
-	mkdir $out_dir
+	out_dir="$output_base_dir/$layer/$output_dir"
+	mkdir -p $out_dir
 	sid/nnet3/xvector/extract_xvectors.sh --cmd "$train_cmd --mem 4G" --nj $nj --use_gpu $use_gpu --chunk_size $chunk_size \
 		$work_dir $corpus_dir $out_dir
 
