@@ -189,7 +189,7 @@ int main(int argc, char *argv[]) {
         for (int32 i = chunk_start; i <= chunk_end; i++) {
           if (i < 0) {
             sub_features.Row(i - chunk_start).CopyFromVec(features.Row(0));
-          else if (i >= num_rows) {
+          } else if (i >= num_rows) {
             sub_features.Row(i - chunk_start).CopyFromVec(features.Row(num_rows - 1));
           } else {
             sub_features.Row(i - chunk_start).CopyFromVec(features.Row(i));
