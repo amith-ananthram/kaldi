@@ -67,7 +67,7 @@ if [ $stage -le 5 ]; then
 	$train_cmd $work_dir/log/scoring.log \
 	    ivector-plda-scoring --normalize-length=true \
 	    "ivector-copy-plda --smoothing=0.0 $work_dir/plda - |" \
-	    "ark:ivector-subtract-global-mean $work_dir/train_mean.vec scp:$work_dir/train_xvector.scp ark:- | transform-vec $work_dir/train_transform.mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
+	    "ark:ivector-subtract-global-mean $work_dir/train_mean.vec scp:$work_dir/test_xvector.scp ark:- | transform-vec $work_dir/train_transform.mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
 	    "ark:ivector-subtract-global-mean $work_dir/train_mean.vec scp:$work_dir/test_xvector.scp ark:- | transform-vec $work_dir/train_transform.mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
 	    "cat '$work_dir/trials' | cut -d\  --fields=1,2 |" $work_dir/scores || exit 1;
 fi
