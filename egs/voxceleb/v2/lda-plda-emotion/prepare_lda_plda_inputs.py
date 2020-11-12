@@ -8,6 +8,10 @@ from collections import Counter, defaultdict
 
 CREMA_D_PATH = 'nnet-emotion/cremad/outputs/data/all_cremad/'
 MELD_PATH = 'nnet-emotion/meld/outputs/data/all_meld/'
+
+CREMA_D_TEMP_UTT2SPK = 'cremad_utt2spk'
+IEMOCAP_TEMP_UTT2SPK = 'iemocap_utt2spk'
+
 IEMOCAP_PATH = 'nnet-emotion/evaluate/all_iemocap/'
 
 VALID_TRAINING_CORPORA = set([
@@ -22,7 +26,7 @@ EMOTION_TO_ID = {emotion: id for id, emotion in
 # example utterance id: anger/disgust-1001_DFA_ANG_XX
 def get_cremad_utterances(speech_dir, text_dir):
 	utterances = defaultdict(dict)
-	with open('%s/utt2spk' % (CREMA_D_PATH), 'r') as f:
+	with open(CREMA_D_TEMP_UTT2SPK, 'r') as f:
 		for line in f.readlines():
 			utterance_id, _ = line.split(' ')
 
@@ -90,7 +94,7 @@ def get_meld_utterances(speech_dir, text_dir):
 # example utterance id: sadness-test-05M-script-02_2-032-M
 def get_iemocap_utterances(speech_dir, text_dir, subset):
 	utterances = defaultdict(dict)
-	with open('%s/utt2spk' % (IEMOCAP_PATH), 'r') as f:
+	with open(IEMOCAP_TEMP_UTT2SPK, 'r') as f:
 		for line in f.readlines():
 			utterance_id, _ = line.split(' ')
 			session = int(utterance_id.split('-')[2][0:2])
@@ -202,7 +206,7 @@ def write_output_files(prefix, utterances, has_speech, has_text, output_dir):
 	print("%s dimensions" % prefix)
 	print(dimensions)
 
-def write_trials_file(test_utterances, output_dir):
+def write_trials_file(test_utterances, trials_mode, output_dir):
 	num_target = 0
 	num_nontarget = 0
 	with open('%s/trials' % output_dir, 'w') as f:

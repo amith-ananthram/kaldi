@@ -19,6 +19,7 @@ speech_dir=placeholder
 text_dir=placeholder
 train_corpora=placeholder
 output_dir=placeholder
+trials_file=placeholder
 
 stage=0
 lda_dim=200
@@ -27,6 +28,10 @@ work_dir="lda_plda_work"
 . parse_options.sh || exit 1;
 
 echo "Starting $variant from stage $stage..."
+
+if [ $trials_file -eq "placeholder" ]; then
+	trials_file=$work_dir/trials
+fi
 
 if [ $stage -le 0 ]; then
 	rm -rf $work_dir
@@ -53,7 +58,6 @@ if [ $stage -le 3 ]; then
 	  ark:$work_dir/train_utt2spk $work_dir/train_transform.mat || exit 1;
 fi
 
-# support using different labeling schemes here
 if [ $stage -le 4 ]; then
 	echo "Training PLDA..."
 	$train_cmd $work_dir/log/plda.log \
@@ -62,6 +66,7 @@ if [ $stage -le 4 ]; then
 	  $work_dir/plda || exit 1;
 fi
 
+
 if [ $stage -le 5 ]; then
 	echo "Scoring..."
 	$train_cmd $work_dir/log/scoring.log \
@@ -69,11 +74,11 @@ if [ $stage -le 5 ]; then
 	    "ivector-copy-plda --smoothing=0.0 $work_dir/plda - |" \
 	    "ark:ivector-subtract-global-mean $work_dir/train_mean.vec scp:$work_dir/train_xvector.scp ark:- | transform-vec $work_dir/train_transform.mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
 	    "ark:ivector-subtract-global-mean $work_dir/train_mean.vec scp:$work_dir/test_xvector.scp ark:- | transform-vec $work_dir/train_transform.mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
-	    "cat '$work_dir/trials' | cut -d\  --fields=1,2 |" $work_dir/scores || exit 1;
+	    "cat '$trials_file' | cut -d\  --fields=1,2 |" $work_dir/scores || exit 1;
 fi
 
 if [ $stage -le 6 ]; then
 	echo "Calculating EER, DET, accuracy and F1..."
 	mkdir -p $output_dir/$variant
-	python lda-plda-emotion/calculate_det_accuracy_and_f1.py --variant $variant --trials-file $work_dir/trials --score-file $work_dir/scores -o $output_dir/$variant | tee -a $output_dir/$variant/results.txt
+	python lda-plda-emotion/calculate_det_accuracy_and_f1.py --variant $variant --trials-file $trials_files --score-file $work_dir/scores -o $output_dir/$variant | tee -a $output_dir/$variant/results.txt
 fi
