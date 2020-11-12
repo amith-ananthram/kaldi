@@ -176,6 +176,9 @@ int main(int argc, char *argv[]) {
         num_rows / static_cast<BaseFloat>(chunk_size));
       Matrix<BaseFloat> xvectors(num_chunks, xvector_dim);
 
+      SubMatrix<BaseFloat> sub_features(
+	features, 0, num_rows, 0, feat_dim);
+
       // Iterate over the feature chunks.  The chunk_indx indexes the center 
       // of our extraction window for our x-vector (which, if needed, is 
       // zero padded on the left and the right)
@@ -185,17 +188,17 @@ int main(int argc, char *argv[]) {
         int32 chunk_end = chunk_center + (chunk_size - 1) / 2;
 
         Vector<BaseFloat> xvector;
-        Matrix<BaseFloat> sub_features(chunk_size, feat_dim);
+        Matrix<BaseFloat> padded_features(chunk_size, feat_dim);
         for (int32 i = chunk_start; i <= chunk_end; i++) {
           if (i < 0) {
-            sub_features.Row(i - chunk_start).CopyFromVec(features.Row(0));
+            padded_features.Row(i - chunk_start).CopyFromVec(sub_features.Row(0));
           } else if (i >= num_rows) {
-            sub_features.Row(i - chunk_start).CopyFromVec(features.Row(num_rows - 1));
+            padded_features.Row(i - chunk_start).CopyFromVec(sub_features.Row(num_rows - 1));
           } else {
-            sub_features.Row(i - chunk_start).CopyFromVec(features.Row(i));
+            padded_features.Row(i - chunk_start).CopyFromVec(sub_features.Row(i));
           }
         }
-        RunNnetComputation(sub_features, nnet, &compiler, &xvector);
+        RunNnetComputation(padded_features, nnet, &compiler, &xvector);
 
         xvectors.CopyRowFromVec(xvector, chunk_indx);
       }

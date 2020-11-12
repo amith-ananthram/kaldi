@@ -101,9 +101,9 @@ if [ $base -eq 1 ]; then
 	num_input_dimensions=33
 	log "using Vox2 model 1..."
 elif [ $base -eq 2 ]; then
-	base_model=vo2_base2.raw
+	base_model=vox2_base2.raw
 	mfcc_conf=conf/tedlium_mfcc.conf
-	num_input_dimension=43
+	num_input_dimensions=43
 	log "using Vox2 model 2..."
 else
 	error "Unsupported base=$base"
@@ -132,7 +132,7 @@ if [ $stage -le 0 ]; then
 			chmod -R 775 $dir
 		fi
 	done
-	cp $base_model $MODEL_INPUT_DIR
+	cp $base_model $MODEL_INPUT_DIR/vox2_base.raw
 	log_stage_end
 fi
 
@@ -232,7 +232,7 @@ if [ $stage -le 2 ]; then
 	stage_details="generating various input files (utt2spk, spk2utt, etc)"
 	log_stage_start
 
-	nnet-emotion/detector/training/generate_corpora_inputs.py \
+	python3 nnet-emotion/detector/training/generate_corpora_inputs.py \
 		--train_corpora $train_corpora \
 		--train_corpora_config $train_corpora_config \
 		--target_emotions_mode $target_emotions_mode \
