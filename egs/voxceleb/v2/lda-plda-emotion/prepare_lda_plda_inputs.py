@@ -206,7 +206,7 @@ def write_output_files(prefix, utterances, has_speech, has_text, output_dir):
 	print("%s dimensions" % prefix)
 	print(dimensions)
 
-def write_trials_file(test_utterances, trials_mode, output_dir):
+def write_trials_file(test_utterances, output_dir):
 	num_target = 0
 	num_nontarget = 0
 	with open('%s/trials' % output_dir, 'w') as f:

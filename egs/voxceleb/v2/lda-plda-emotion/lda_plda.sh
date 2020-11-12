@@ -29,7 +29,7 @@ work_dir="lda_plda_work"
 
 echo "Starting $variant from stage $stage..."
 
-if [ $trials_file -eq "placeholder" ]; then
+if [ $trials_file = "placeholder" ]; then
 	trials_file=$work_dir/trials
 fi
 
